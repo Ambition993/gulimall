@@ -7,6 +7,7 @@ import java.util.Map;
 import com.zhyf.gulimall.coupon.entity.CouponEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,19 +26,20 @@ import com.zhyf.common.utils.R;
  * @email nibainle@gmail.com
  * @date 2020-12-16 13:21:46
  */
+@RefreshScope
 @RestController
 @RequestMapping("coupon/coupon")
 public class CouponController {
     @Autowired
     private CouponService couponService;
-    @Value("${coupon.name}")
+    @Value("${coupon.user.age}")
     private int age;
-    @Value("${coupon.age}")
+    @Value("${coupon.user.name}")
     private String name;
 
     @RequestMapping("/test")
     public R test() {
-        return R.ok().put("age", name).put("age", age);
+        return R.ok().put("name", name).put("age", age);
     }
 
 
