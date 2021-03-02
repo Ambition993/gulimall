@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
@@ -19,15 +21,13 @@ class GulimallProductApplicationTests {
     BrandService brandService;
 
 
-
     @Test
     void contextLoads() {
         BrandEntity brandEntity = new BrandEntity();
         brandEntity.setDescript("ss");
         brandEntity.setLogo("hw");
         brandService.save(brandEntity);
-        List<BrandEntity> brandEntities = brandService.list(new QueryWrapper<BrandEntity>().eq("logo","hw"));
+        List<BrandEntity> brandEntities = brandService.list(new QueryWrapper<BrandEntity>().eq("logo", "hw"));
         brandEntities.forEach(System.out::println);
     }
-
 }

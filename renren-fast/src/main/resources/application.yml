@@ -22,6 +22,8 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
       enabled: true
+  application:
+    name: renren-fast
   redis:
     open: false  # 是否开启redis缓存  true开启   false关闭
     database: 0
@@ -37,8 +39,13 @@ spring:
         min-idle: 5       # 连接池中的最小空闲连接
   mvc:
     throw-exception-if-no-handler-found: true
+  cloud:
+    nacos:
+      discovery:
+        server-addr:http://192.168.56.1:8848
 #  resources:
 #    add-mappings: false
+
 
 
 #mybatis

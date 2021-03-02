@@ -1,4 +1,4 @@
-package com.zhyf.gulimall.gulimallgateway;
+package com.zhyf.gulimall.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

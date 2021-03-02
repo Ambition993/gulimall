@@ -1,4 +1,4 @@
-package com.zhyf.gulimall.gulimallgateway;
+package com.zhyf.gulimall.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
