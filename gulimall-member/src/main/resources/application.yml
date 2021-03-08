@@ -16,7 +16,7 @@ spring:
       discovery:
         server-addr: http://192.168.56.1:8848
   application:
-    name: gulimall-member-service
+    name: gulimall-member
 
 mybatis-plus:
   mapperLocations: classpath:mapper/**/*.xml

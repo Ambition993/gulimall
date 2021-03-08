@@ -3,6 +3,7 @@ package com.zhyf.gulimall.product;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.zhyf.gulimall.product.entity.BrandEntity;
 import com.zhyf.gulimall.product.service.BrandService;
+import com.zhyf.gulimall.product.service.CategoryService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,16 @@ class GulimallProductApplicationTests {
 
     @Autowired
     BrandService brandService;
+    @Autowired
+    CategoryService categoryService;
 
+    @Test
+    public void  getParentPath() {
+        Long[] catelogPath = categoryService.findCatelogPath(225L);
+        for (Long catelog : catelogPath){
+            System.out.println(catelog);
+        }
+    }
 
     @Test
     void contextLoads() {
@@ -30,4 +40,5 @@ class GulimallProductApplicationTests {
         List<BrandEntity> brandEntities = brandService.list(new QueryWrapper<BrandEntity>().eq("logo", "hw"));
         brandEntities.forEach(System.out::println);
     }
+
 }
