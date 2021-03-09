@@ -2,15 +2,16 @@ package com.zhyf.gulimall.product.controller;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.zhyf.gulimall.product.entity.BrandEntity;
+import com.zhyf.gulimall.product.vo.BrandVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.zhyf.gulimall.product.entity.CategoryBrandRelationEntity;
 import com.zhyf.gulimall.product.service.CategoryBrandRelationService;
-import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.R;
 
 
@@ -27,6 +28,21 @@ public class CategoryBrandRelationController {
     @Autowired
     private CategoryBrandRelationService categoryBrandRelationService;
 
+
+    //brands/list
+
+    @GetMapping("/brands/list")
+    public R relationBrandsList(@RequestParam(value = "catId", required = true ,defaultValue = "0") Long catId) {
+        List<BrandEntity> vos = categoryBrandRelationService.getBrandsByCatId(catId);
+        List<BrandVo> collect = vos.stream().map((item) -> {
+            BrandVo brandVo = new BrandVo();
+            brandVo.setBrandId(item.getBrandId());
+            brandVo.setBrandName(item.getName());
+            return brandVo;
+        }).collect(Collectors.toList());
+        return R.ok().put("data", collect);
+    }
+
     /**
      * 列表 获取当前品牌的关联的所有分类列表功能
      */
@@ -35,7 +51,7 @@ public class CategoryBrandRelationController {
     public R catelogList(@RequestParam("brandId") Long brandId) {
         List<CategoryBrandRelationEntity> data = categoryBrandRelationService.list(
                 new QueryWrapper<CategoryBrandRelationEntity>().eq("brand_id", brandId));
-        return R.ok().put("page", data);
+        return R.ok().put("data", data);
     }
 
 

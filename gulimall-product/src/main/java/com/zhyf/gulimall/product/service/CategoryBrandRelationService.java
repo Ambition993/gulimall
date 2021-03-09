@@ -2,9 +2,11 @@ package com.zhyf.gulimall.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zhyf.common.utils.PageUtils;
+import com.zhyf.gulimall.product.entity.BrandEntity;
 import com.zhyf.gulimall.product.entity.CategoryBrandRelationEntity;
 import com.zhyf.gulimall.product.entity.CategoryEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,5 +26,7 @@ public interface CategoryBrandRelationService extends IService<CategoryBrandRela
 
 
     void updateCategory(Long catId, String name);
+
+    List<BrandEntity> getBrandsByCatId(Long catId);
 }
 

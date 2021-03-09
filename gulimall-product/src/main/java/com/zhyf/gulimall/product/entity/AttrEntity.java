@@ -1,5 +1,6 @@
 package com.zhyf.gulimall.product.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
@@ -47,7 +48,8 @@ public class AttrEntity implements Serializable {
     /**
      * 值类型[0-单个，1多个]
      */
-    private Integer valueType;
+    @TableField(exist = false)
+    private Integer valueType   ;
     /**
      * 启用状态[0 - 禁用，1 - 启用]
      */

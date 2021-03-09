@@ -32,16 +32,6 @@ import com.zhyf.common.utils.R;
 public class CouponController {
     @Autowired
     private CouponService couponService;
-    @Value("${coupon.user.age}")
-    private int age;
-    @Value("${coupon.user.name}")
-    private String name;
-
-    @RequestMapping("/test")
-    public R test() {
-        return R.ok().put("name", name).put("age", age);
-    }
-
 
     //测试openfeign 调用
     @RequestMapping("/member/list")
