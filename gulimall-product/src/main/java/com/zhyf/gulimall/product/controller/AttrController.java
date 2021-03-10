@@ -1,8 +1,11 @@
 package com.zhyf.gulimall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import com.zhyf.gulimall.product.entity.ProductAttrValueEntity;
+import com.zhyf.gulimall.product.service.ProductAttrValueService;
 import com.zhyf.gulimall.product.vo.AttrGroupRelationVo;
 import com.zhyf.gulimall.product.vo.AttrRespVo;
 import com.zhyf.gulimall.product.vo.AttrVo;
@@ -27,7 +30,21 @@ public class AttrController {
     @Autowired
     private AttrService attrService;
 
+    @Autowired
+    ProductAttrValueService productAttrValueService;
 
+    @GetMapping("/base/listforspu/{spuId}")
+    public R baseAttrList(@PathVariable("spuId") Long spuId) {
+        List<ProductAttrValueEntity> entities = productAttrValueService.baseAttrListforSpu(spuId);
+        return R.ok().put("data", entities);
+    }
+
+    /**
+     * @param params
+     * @param catelogId
+     * @param type
+     * @return
+     */
     @RequestMapping("/{attrType}/list/{catelogId}")
     public R baseList(@RequestParam Map<String, Object> params,
                       @PathVariable("catelogId") Long catelogId,
@@ -57,6 +74,7 @@ public class AttrController {
         AttrRespVo vo = attrService.getDetailInfo(attrId);
         return R.ok().put("attr", vo);
     }
+
     /**
      * 保存
      */
@@ -75,6 +93,17 @@ public class AttrController {
     public R update(@RequestBody AttrVo attrVo) {
         attrService.updateAttr(attrVo);
 
+        return R.ok();
+    }
+
+    /**
+     * 修改
+     */
+    @RequestMapping("/update/{spuId}")
+//    @RequiresPermissions("product:attr:update")
+    public R update(@PathVariable("spuId") Long spuId,
+                    @RequestBody List<ProductAttrValueEntity> entities) {
+        productAttrValueService.update(spuId,entities);
         return R.ok();
     }
 

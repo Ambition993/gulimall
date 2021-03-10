@@ -1,21 +1,20 @@
 package com.zhyf.gulimall.ware.controller;
 
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.zhyf.gulimall.ware.entity.PurchaseEntity;
+import com.zhyf.gulimall.ware.vo.MergeVo;
+import com.zhyf.gulimall.ware.vo.PurchaseDoneVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.zhyf.gulimall.ware.service.PurchaseService;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.R;
-
 
 
 /**
@@ -30,11 +29,34 @@ import com.zhyf.common.utils.R;
 public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
+    // /ware/purchase/done
+    // 领取采购单
+    @PostMapping("/done")
+    public R finish(@RequestBody PurchaseDoneVo doneVo) {
+        purchaseService.done(doneVo);
+        return R.ok();
+    }
+    // 领取采购单
+    @PostMapping("/receive")
+    public R receive(@RequestBody List<Long> ids) {
+        purchaseService.received(ids);
+        return R.ok();
+    }
 
+    // /ware/purchase/merge
+    @PostMapping("/merge")
+    public R merge(@RequestBody MergeVo mergeVo) {
+        purchaseService.mergePurchase(mergeVo);
+        return R.ok();
+    }
 
-    @RequestMapping("/test")
-    public String test(){
-        return "test";
+    // /ware/purchase/unreceive/list
+    @RequestMapping("/unreceive/list")
+//   @RequiresPermissions("product:purchase:list")
+    public R unreceiveList(@RequestParam Map<String, Object> params) {
+        PageUtils page = purchaseService.queryPageUnreceivePurchase(params);
+
+        return R.ok().put("page", page);
     }
 
     /**
@@ -42,7 +64,7 @@ public class PurchaseController {
      */
     @RequestMapping("/list")
 //   @RequiresPermissions("product:purchase:list")
-    public R list(@RequestParam Map<String, Object> params){
+    public R list(@RequestParam Map<String, Object> params) {
         PageUtils page = purchaseService.queryPage(params);
 
         return R.ok().put("page", page);
@@ -54,8 +76,8 @@ public class PurchaseController {
      */
     @RequestMapping("/info/{id}")
 //   @RequiresPermissions("product:purchase:info")
-    public R info(@PathVariable("id") Long id){
-		PurchaseEntity purchase = purchaseService.getById(id);
+    public R info(@PathVariable("id") Long id) {
+        PurchaseEntity purchase = purchaseService.getById(id);
 
         return R.ok().put("purchase", purchase);
     }
@@ -65,8 +87,10 @@ public class PurchaseController {
      */
     @RequestMapping("/save")
 //   @RequiresPermissions("product:purchase:save")
-    public R save(@RequestBody PurchaseEntity purchase){
-		purchaseService.save(purchase);
+    public R save(@RequestBody PurchaseEntity purchase) {
+        purchase.setUpdateTime(new Date());
+        purchase.setCreateTime(new Date());
+        purchaseService.save(purchase);
 
         return R.ok();
     }
@@ -76,8 +100,8 @@ public class PurchaseController {
      */
     @RequestMapping("/update")
 //    @RequiresPermissions("product:purchase:update")
-    public R update(@RequestBody PurchaseEntity purchase){
-		purchaseService.updateById(purchase);
+    public R update(@RequestBody PurchaseEntity purchase) {
+        purchaseService.updateById(purchase);
 
         return R.ok();
     }
@@ -87,8 +111,8 @@ public class PurchaseController {
      */
     @RequestMapping("/delete")
 //  @RequiresPermissions("product:purchase:delete")
-    public R delete(@RequestBody Long[] ids){
-		purchaseService.removeByIds(Arrays.asList(ids));
+    public R delete(@RequestBody Long[] ids) {
+        purchaseService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
     }

@@ -40,10 +40,10 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 feign:
   httpclient:
     connection-timeout: 500000
-
+logging:
+  level:
+    com.zhyf: debug
 #指定数据库，可选值有【mysql、oracle、sqlserver、postgresql、mongodb】

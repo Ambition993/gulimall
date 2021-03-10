@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface CouponFeignService {
     @PostMapping("/coupon/spubounds/save")
     R saveSpuBounds(@RequestBody SpuBoundsTo boundsTo);
-@PostMapping("coupon/skufullreduction/saveinfo")
+
+    @PostMapping("/coupon/skufullreduction/saveinfo")
     R saveSpuReduction(@RequestBody SkuReductionTo skuReductionTo);
 }
