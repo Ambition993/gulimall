@@ -7,6 +7,7 @@ spring:
     nacos:
       discovery:
         server-addr:  http://192.168.56.1:8848
+
   #    alicloud:
 #      access-key: LTAI4GKEqs7HSk2pkKuNC951
 #      secret-key: SX0V5ehY1mLDq60ka7ZzlU2qOUSg1W
@@ -22,6 +23,8 @@ spring:
 
   application:
     name: gulimall-product
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
 
 #mongodb:
 #  host: localhost
@@ -37,13 +40,10 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
-logging:
-  level:
-    com.zhyf.gulimall: debug
-
-
-
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+feign:
+  httpclient:
+    connection-timeout: 500000
 
 #指定数据库，可选值有【mysql、oracle、sqlserver、postgresql、mongodb】
-
-

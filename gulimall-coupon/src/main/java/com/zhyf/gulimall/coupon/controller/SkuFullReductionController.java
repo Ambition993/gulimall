@@ -65,7 +65,6 @@ public class SkuFullReductionController {
 //   @RequiresPermissions("product:skufullreduction:save")
     public R save(@RequestBody SkuFullReductionEntity skuFullReduction){
 		skuFullReductionService.save(skuFullReduction);
-
         return R.ok();
     }
 
@@ -76,7 +75,6 @@ public class SkuFullReductionController {
 //    @RequiresPermissions("product:skufullreduction:update")
     public R update(@RequestBody SkuFullReductionEntity skuFullReduction){
 		skuFullReductionService.updateById(skuFullReduction);
-
         return R.ok();
     }
 
