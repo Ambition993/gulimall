@@ -1,20 +1,19 @@
 package com.zhyf.gulimall.product.service.impl;
 
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.Query;
-
 import com.zhyf.gulimall.product.dao.SkuInfoDao;
 import com.zhyf.gulimall.product.entity.SkuInfoEntity;
 import com.zhyf.gulimall.product.service.SkuInfoService;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 
 @Service("skuInfoService")
@@ -84,6 +83,11 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public List<SkuInfoEntity> getSkusBySpuId(Long spuId) {
+        return this.list(new QueryWrapper<SkuInfoEntity>().eq("spu_id", spuId));
     }
 
 }

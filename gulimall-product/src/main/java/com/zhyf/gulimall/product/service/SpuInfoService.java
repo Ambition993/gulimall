@@ -2,7 +2,6 @@ package com.zhyf.gulimall.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zhyf.common.utils.PageUtils;
-import com.zhyf.gulimall.product.entity.SpuInfoDescEntity;
 import com.zhyf.gulimall.product.entity.SpuInfoEntity;
 import com.zhyf.gulimall.product.vo.SpuSaveVo;
 
@@ -24,5 +23,7 @@ public interface SpuInfoService extends IService<SpuInfoEntity> {
     void saveBaseSpuInfo(SpuInfoEntity spuInfoEntity);
 
     PageUtils queryPageByCondition(Map<String, Object> params);
+
+    void up(Long spuId);
 }
 

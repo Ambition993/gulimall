@@ -10,6 +10,7 @@ import com.zhyf.gulimall.ware.dao.WareSkuDao;
 import com.zhyf.gulimall.ware.entity.WareSkuEntity;
 import com.zhyf.gulimall.ware.feign.ProductFeignService;
 import com.zhyf.gulimall.ware.service.WareSkuService;
+import com.zhyf.gulimall.ware.vo.SkuHasStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("wareSkuService")
@@ -80,6 +82,20 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             wareSkuDao.addStock(skuId, wareId, skuNum);
         }
 
+    }
+
+    @Override
+    public List<SkuHasStockVo> getSkusHasStock(List<Long> skuIds) {
+        List<SkuHasStockVo> collect = skuIds.stream().map(skuId -> {
+            SkuHasStockVo vo = new SkuHasStockVo();
+            // 查询当前sku的总库存量
+            //SELECT SUM (stock - stock_locked) FROM `wms_ware_sku` WHERE sku_id = 1
+            long count = baseMapper.getSkuStock(skuId);
+            vo.setSkuId(skuId);
+            vo.setHasStock(count > 0);
+            return vo;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
 }

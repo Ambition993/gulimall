@@ -1,13 +1,21 @@
 package com.zhyf.gulimall.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhyf.common.constant.ProductConstant;
+import com.zhyf.common.utils.PageUtils;
+import com.zhyf.common.utils.Query;
 import com.zhyf.gulimall.product.dao.AttrAttrgroupRelationDao;
+import com.zhyf.gulimall.product.dao.AttrDao;
 import com.zhyf.gulimall.product.dao.AttrGroupDao;
 import com.zhyf.gulimall.product.dao.CategoryDao;
 import com.zhyf.gulimall.product.entity.AttrAttrgroupRelationEntity;
+import com.zhyf.gulimall.product.entity.AttrEntity;
 import com.zhyf.gulimall.product.entity.AttrGroupEntity;
 import com.zhyf.gulimall.product.entity.CategoryEntity;
+import com.zhyf.gulimall.product.service.AttrService;
 import com.zhyf.gulimall.product.service.CategoryService;
 import com.zhyf.gulimall.product.vo.AttrGroupRelationVo;
 import com.zhyf.gulimall.product.vo.AttrRespVo;
@@ -15,23 +23,13 @@ import com.zhyf.gulimall.product.vo.AttrVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.zhyf.common.utils.PageUtils;
-import com.zhyf.common.utils.Query;
-
-import com.zhyf.gulimall.product.dao.AttrDao;
-import com.zhyf.gulimall.product.entity.AttrEntity;
-import com.zhyf.gulimall.product.service.AttrService;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 
 @Service("attrService")
@@ -99,12 +97,12 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
             BeanUtils.copyProperties(attrEntity, attrRespVo);
             // 设置属性分组的名字
             if ("base".equalsIgnoreCase(type)) {
-                    AttrAttrgroupRelationEntity attrgroupRelationEntity = relationDao.selectOne(
+                AttrAttrgroupRelationEntity attrgroupRelationEntity = relationDao.selectOne(
                         new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attrEntity.getAttrId()));
                 if (attrgroupRelationEntity != null && attrgroupRelationEntity.getAttrGroupId() != null) {
                     Long attrGroupId = attrgroupRelationEntity.getAttrGroupId();
                     AttrGroupEntity groupEntity = attrGroupDao.selectById(attrGroupId);
-                        attrRespVo.setGroupName(groupEntity.getAttrGroupName());
+                    attrRespVo.setGroupName(groupEntity.getAttrGroupName());
                 }
             }
             CategoryEntity categoryEntity = categoryDao.selectById(attrEntity.getCatelogId());
@@ -230,6 +228,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 
     /**
      * 获取当前分组没有关联的所有属性
+     *
      * @param params
      * @param attrgroupId
      * @return
@@ -253,14 +252,14 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         }).collect(Collectors.toList());
 
         //2.3)、从当前分类的所有属性中移除这些属性；
-        QueryWrapper<AttrEntity> wrapper = new QueryWrapper<AttrEntity>().eq("catelog_id", catelogId).eq("attr_type",ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
-        if(attrIds!=null && attrIds.size()>0){
+        QueryWrapper<AttrEntity> wrapper = new QueryWrapper<AttrEntity>().eq("catelog_id", catelogId).eq("attr_type", ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+        if (attrIds != null && attrIds.size() > 0) {
             wrapper.notIn("attr_id", attrIds);
         }
         String key = (String) params.get("key");
-        if(!StringUtils.isEmpty(key)){
-            wrapper.and((w)->{
-                w.eq("attr_id",key).or().like("attr_name",key);
+        if (!StringUtils.isEmpty(key)) {
+            wrapper.and((w) -> {
+                w.eq("attr_id", key).or().like("attr_name", key);
             });
         }
         IPage<AttrEntity> page = this.page(new Query<AttrEntity>().getPage(params), wrapper);
@@ -268,5 +267,17 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         PageUtils pageUtils = new PageUtils(page);
 
         return pageUtils;
+    }
+
+    /**
+     * 在指定的属性集合里面挑选出来检索属性
+     *
+     * @param attrIds
+     * @return
+     */
+    @Override
+    public List<Long> selectSearchAttrs(List<Long> attrIds) {
+        // SELECT * FROM `pms_attr` WHERE attr_id IN (?) AND search_type = 1
+        return baseMapper.selectSearchAttrsIds(attrIds);
     }
 }
