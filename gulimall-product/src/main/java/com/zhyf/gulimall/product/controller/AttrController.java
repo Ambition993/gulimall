@@ -1,20 +1,18 @@
 package com.zhyf.gulimall.product.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
+import com.zhyf.common.utils.PageUtils;
+import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.product.entity.ProductAttrValueEntity;
+import com.zhyf.gulimall.product.service.AttrService;
 import com.zhyf.gulimall.product.service.ProductAttrValueService;
-import com.zhyf.gulimall.product.vo.AttrGroupRelationVo;
 import com.zhyf.gulimall.product.vo.AttrRespVo;
 import com.zhyf.gulimall.product.vo.AttrVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.zhyf.gulimall.product.service.AttrService;
-import com.zhyf.common.utils.PageUtils;
-import com.zhyf.common.utils.R;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -103,7 +101,7 @@ public class AttrController {
 //    @RequiresPermissions("product:attr:update")
     public R update(@PathVariable("spuId") Long spuId,
                     @RequestBody List<ProductAttrValueEntity> entities) {
-        productAttrValueService.update(spuId,entities);
+        productAttrValueService.update(spuId, entities);
         return R.ok();
     }
 

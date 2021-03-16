@@ -1,4 +1,4 @@
-package com.zhyf.common.feign;
+package com.zhyf.gulimall.ware.feign;
 
 import com.zhyf.common.utils.R;
 import org.springframework.cloud.openfeign.FeignClient;

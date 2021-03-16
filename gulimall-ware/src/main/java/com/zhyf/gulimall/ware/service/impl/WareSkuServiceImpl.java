@@ -1,31 +1,28 @@
 package com.zhyf.gulimall.ware.service.impl;
 
-import com.zhyf.common.feign.ProductFeignService;
-import com.zhyf.common.utils.R;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.Query;
-
+import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.ware.dao.WareSkuDao;
 import com.zhyf.gulimall.ware.entity.WareSkuEntity;
+import com.zhyf.gulimall.ware.feign.ProductFeignService;
 import com.zhyf.gulimall.ware.service.WareSkuService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Map;
 
 
 @Service("wareSkuService")
 public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> implements WareSkuService {
     @Autowired
     WareSkuDao wareSkuDao;
-
     @Autowired
     ProductFeignService productFeignService;
 
