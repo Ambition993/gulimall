@@ -25,7 +25,7 @@ public class GulimallElasticSearchConfig {
     }
 
     @Bean
-    public RestHighLevelClient esRestClient() {
+    public RestHighLevelClient restHighLevelClient() {
         return new RestHighLevelClient(
                 RestClient.builder(new HttpHost("47.111.6.138", 9200, "http"))
         );

@@ -46,6 +46,10 @@ spring:
           filters:
             - RewritePath=/api/(?<segment>/?.*),/renren-fast/$\{segment}
 
+        - id: gulimall_host_route
+          uri: lb://gulimall-product
+          predicates:
+            - Host=**.gulimall.com
     nacos:
       discovery:
         server-addr: http://192.168.56.1:8848

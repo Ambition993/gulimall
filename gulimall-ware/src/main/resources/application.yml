@@ -29,3 +29,6 @@ mybatis-plus:
 logging:
   level:
     com.zhyf: debug
+feign:
+  httpclient:
+    connection-timeout: 50000

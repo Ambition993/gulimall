@@ -15,7 +15,8 @@ package com.zhyf.common.exception;
 public enum BizCodeEnum {
 
     UNKNOWN_EXCEPTION(10000, "未知错误"),
-    VALID_EXCEPTION(10001, "参数校验错误");
+    VALID_EXCEPTION(10001, "参数校验错误"),
+    PRODUCT_UP_EXCEPTION(11000,"商品上架异常");
 
 
     private int code;

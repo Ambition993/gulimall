@@ -1,18 +1,13 @@
 server:
   port: 10000
 
-# mysql
+
 spring:
   cloud:
     nacos:
       discovery:
-        server-addr:  http://192.168.56.1:8848
-
-  #    alicloud:
-#      access-key: LTAI4GKEqs7HSk2pkKuNC951
-#      secret-key: SX0V5ehY1mLDq60ka7ZzlU2qOUSg1W
-#      oss:
-#        endpoint: oss-cn-hangzhou.aliyuncs.com
+        server-addr: http://192.168.56.1:8848
+  # 数据源
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     #MySQL配置
@@ -20,30 +15,28 @@ spring:
     url: jdbc:mysql://39.106.68.63:3306/gulimall_pms?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: zhyf123456++
-
+  # 服务名
   application:
     name: gulimall-product
+  # json转换格式
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML5
+    servlet:
+      content-type: text/html
 
-#mongodb:
-#  host: localhost
-#  port: 27017
-#  auth: false #是否使用密码验证
-#  username: tincery
-#  password: renren
-#  source: 123456
-#  database: test
-
+#mybatis-plus
 mybatis-plus:
   mapperLocations: classpath:mapper/**/*.xml
   global-config:
     db-config:
       id-type: auto
-feign:
-  httpclient:
-    connection-timeout: 500000
+  #日志
 logging:
   level:
     com.zhyf: debug
-#指定数据库，可选值有【mysql、oracle、sqlserver、postgresql、mongodb】

@@ -4,12 +4,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Data;
 
 /**
  * 商品三级分类
@@ -20,6 +20,7 @@ import lombok.Data;
  */
 @Data
 @TableName("pms_category")
+@ToString
 public class CategoryEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
