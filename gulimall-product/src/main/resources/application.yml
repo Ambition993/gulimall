@@ -15,12 +15,13 @@ spring:
     url: jdbc:mysql://39.106.68.63:3306/gulimall_pms?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: zhyf123456++
-  # 服务名
+  #服务名
   application:
     name: gulimall-product
-  # json转换格式
+  #json转换格式
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  #thymeleaf
   thymeleaf:
     cache: false
     prefix: classpath:/templates/
@@ -29,6 +30,10 @@ spring:
     mode: HTML5
     servlet:
       content-type: text/html
+  #redis
+  redis:
+    host: 192.168.56.10
+    port: 6379
 
 #mybatis-plus
 mybatis-plus:

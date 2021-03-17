@@ -8,11 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.UUID;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -22,11 +23,13 @@ class GulimallProductApplicationTests {
     BrandService brandService;
     @Autowired
     CategoryService categoryService;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     @Test
-    public void  getParentPath() {
+    public void getParentPath() {
         Long[] catelogPath = categoryService.findCatelogPath(225L);
-        for (Long catelog : catelogPath){
+        for (Long catelog : catelogPath) {
             System.out.println(catelog);
         }
     }
@@ -39,6 +42,14 @@ class GulimallProductApplicationTests {
         brandService.save(brandEntity);
         List<BrandEntity> brandEntities = brandService.list(new QueryWrapper<BrandEntity>().eq("logo", "hw"));
         brandEntities.forEach(System.out::println);
+    }
+
+    @Test
+    void testRedis() {
+        ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+        ops.set("hello", "world_" + UUID.randomUUID().toString());
+        String hello = ops.get("hello");
+        System.out.println(hello);
     }
 
 }
