@@ -1,7 +1,5 @@
 package com.zhyf.gulimall.product.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -14,15 +12,13 @@ import com.zhyf.gulimall.product.service.CategoryService;
 import com.zhyf.gulimall.product.vo.Catelog2Vo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -78,6 +74,13 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return (Long[]) parentPath.toArray(new Long[parentPath.size()]);
     }
 
+    /**
+     * 失效模式的一个使用
+     * 更改一级分类菜单的时候 清除两处缓存 同时进行多种缓存操作
+     *
+     * @param category
+     */
+    @CacheEvict(value = "category", allEntries = true)
     @Transactional
     @Override
     public void updateCascade(CategoryEntity category) {
@@ -85,33 +88,17 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
     }
 
+    @Cacheable(value = {"category"}, key = "#root.methodName",sync = true)   // sync = true 缓存击穿
     @Override
     public List<CategoryEntity> getLevel1Categorys() {
+        System.out.println("执行了方法");
         return baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
     }
 
+    @Cacheable(value = {"category"}, key = "#root.methodName", sync = true)
     @Override
     public Map<String, List<Catelog2Vo>> getCatelogJson() {
-        // 加入缓存逻辑
-        String catelogJSON = redisTemplate.opsForValue().get("catelogJSON");
-        if (StringUtils.isEmpty(catelogJSON)) {
-            Map<String, List<Catelog2Vo>> catelogJsonFromDB = getCatelogJsonFromDB();
-            //查到的数据放入缓存
-            String jsonString = JSON.toJSONString(catelogJsonFromDB);
-            redisTemplate.opsForValue().set("catelogJSON", jsonString);
-            return catelogJsonFromDB;
-        }
-        Map<String, List<Catelog2Vo>> result = JSON.parseObject(catelogJSON, new TypeReference<Map<String, List<Catelog2Vo>>>() {
-        });
-        return result;
-    }
-
-    /**
-     * 用来在数据库中查找并封装分类信息再存入缓存
-     *
-     * @return
-     */
-    public Map<String, List<Catelog2Vo>> getCatelogJsonFromDB() {
+        // 查询数据库
         List<CategoryEntity> selectList = baseMapper.selectList(null);
         //查出所有的一级分类数据
         List<CategoryEntity> level1Categorys = getParentCid(selectList, 0L);
@@ -143,9 +130,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
     private List<CategoryEntity> getParentCid(List<CategoryEntity> selectList, Long parent_cid) {
-        return selectList.stream().filter(item -> {
-            return item.getParentCid() == parent_cid;
-        }).collect(Collectors.toList());
+        return selectList.stream().filter(item -> item.getParentCid() == parent_cid).collect(Collectors.toList());
     }
 
     private List<Long> findParentPath(Long catelogId, ArrayList<Long> path) {
@@ -164,9 +149,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         }).map((categoryEntity) -> {
             categoryEntity.setChildren(getChildrens(categoryEntity, all));
             return categoryEntity;
-        }).sorted((menu1, menu2) -> {
-            return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparingInt(menu -> (menu.getSort() == null ? 0 : menu.getSort()))).collect(Collectors.toList());
         return children;
     }
 
