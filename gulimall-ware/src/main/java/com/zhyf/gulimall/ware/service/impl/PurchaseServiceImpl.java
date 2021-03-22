@@ -163,18 +163,16 @@ public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity
         Long id = doneVo.getId();
         Boolean flag = true;
         for (PurchaseItemDoneVo item : items) { // 遍历采购项
-            PurchaseDetailEntity detailEntity = new PurchaseDetailEntity();
             if (item.getStatus() == WareConstant.PurchaseDetailStatusEnum.HASERROR.getCode()) {
                 flag = false;
-                detailEntity.setStatus(item.getStatus());
-            } else {
-                detailEntity.setStatus(WareConstant.PurchaseDetailStatusEnum.FINISH.getCode());
-                // 3 成功采购的入库 给那个仓库(ware_id)哪个商品(sku_id)入几个(stock+?)
-                // 查出采购项
-                PurchaseDetailEntity entity = detailService.getById(item.getItemId());
-                wareSkuService.addStock(entity.getSkuId(), entity.getWareId(), entity.getSkuNum());
+            }else {
+                //增加库存
+                PurchaseDetailEntity byId = detailService.getById(item.getItemId());
+                wareSkuService.addStock(byId.getSkuId(), byId.getWareId(), byId.getSkuNum());
             }
+            PurchaseDetailEntity detailEntity = new PurchaseDetailEntity();
             detailEntity.setId(item.getItemId());
+            detailEntity.setStatus(item.getStatus());
             updates.add(detailEntity);
         }
         detailService.updateBatchById(updates);
