@@ -37,6 +37,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -159,31 +161,67 @@ public class MallSearchServiceImpl implements MallSearchService {
         }
         result.setPageNavs(pageNavs);
         // 构建面包屑导航功能
-        List<SearchResult.NavVo> navVos = new ArrayList<>();
+        List<SearchResult.NavVo> navVos;
         List<String> attrs = param.getAttrs();
-        navVos = attrs.stream().map(attr -> {
-            SearchResult.NavVo navVo = new SearchResult.NavVo();
-            // 分析每一个attrs传过来的数值
-            String[] s = attr.split("_");
-            navVo.setNavValue(s[1]);
-            R r = productFeignService.attrInfo(Long.parseLong(s[0]));
-            if (r.getCode() == 0) {
-                AttrResponseVo data = r.getData("attr", new TypeReference<AttrResponseVo>() {
-                });
-                navVo.setNavName(data.getAttrName());
-            } else {
-                navVo.setNavName(s[0]);
-            }
-            // 取消这个面包屑以后跳转到哪个地方
-            // 请求地址的url 地址换掉
-            // 拿到所有的查询条件 去掉当前
-            String replace = param.get_queryString();
-            replace.replace("&attrs=" + attr, "");
-            navVo.setLink("http://search.gulimall.com/list.html" + replace);
-            return navVo;
-        }).collect(Collectors.toList());
-        result.setNavs(navVos);
+        if (attrs != null && attrs.size() > 0) {
+            navVos = attrs.stream().map(attr -> {
+                SearchResult.NavVo navVo = new SearchResult.NavVo();
+                // 分析每一个attrs传过来的数值
+                String[] s = attr.split("_");
+                navVo.setNavValue(s[1]);
+                R r = productFeignService.attrInfo(Long.parseLong(s[0]));
+                if (r.getCode() == 0) {
+                    AttrResponseVo data = r.getData("attr", new TypeReference<AttrResponseVo>() {
+                    });
+                    navVo.setNavName(data.getAttrName());
+                } else {
+                    navVo.setNavName(s[0]);
+                }
+                // 取消这个面包屑以后跳转到哪个地方
+                // 请求地址的url 地址换掉
+                // 拿到所有的查询条件 去掉当前
+                //6.3 设置面包屑跳转链接
+                String replace = replaceQueryString(param, attr, "attrs");
+                navVo.setLink("http://search.gulimall.com/list.html?" + replace);
+                return navVo;
+            }).collect(Collectors.toList());
+            result.setNavs(navVos);
+//            //
+//            if (param.getBrandId() != null && param.getBrandId().size() > 0) {
+//                List<SearchResult.NavVo> navs = result.getNavs();
+//                SearchResult.NavVo navVo = new SearchResult.NavVo();
+//                navVo.setNavName("品牌");
+//                R r = productFeignService.brandInfos(param.getBrandId());
+//                if (r.getCode() == 0) {
+//                    List<BrandVo> brand = r.getData("brand", new TypeReference<List<BrandVo>>() {
+//                    });
+//                    StringBuffer sb = new StringBuffer();
+//                    String replace = "";
+//                    for (BrandVo brandVo : brand) {
+//                        sb.append(brandVo.getBrandName() + ";");
+//                        replace = replaceQueryString(param, brandVo.getBrandId() + "", "brandId");
+//                    }
+//                    navVo.setNavValue(sb.toString());
+//                    navVo.setLink("http://search.gulimall.com/list.html?" + replace);
+//                }
+//                navs.add(navVo);
+//            }
+        }
+        //
         return result;
+    }
+
+    private String replaceQueryString(SearchParam param, String value, String key) {
+        String encode = null;
+        try {
+            encode = URLEncoder.encode(value, "UTF-8");
+            encode.replace("+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        String replace = param.get_queryString().replace("&" + key + "=" + encode, "");
+        return replace;
     }
 
     /**

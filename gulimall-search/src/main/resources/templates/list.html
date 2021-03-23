@@ -765,6 +765,10 @@
                 <a href="/static/search/#">游戏手机</a>
             </div>
         </div>
+        <div class="JD_ipone_one c">
+            <!-- 遍历面包屑功能 -->
+            <a th:href="${nav.link}" th:each="nav:${result.navs}"><span th:text="${nav.navName}"></span>：<span th:text="${nav.navValue}"></span> x</a>
+        </div>
         <i><img src="/static/search/image/right-@1x.png" alt=""></i>
     </div>
 </div>
@@ -1190,7 +1194,7 @@
                                 </div>
                                 <!--                            商品大图-->
                                 <p class="da">
-                                    <a href="/static/search/#">
+                                    <a th:href="|http://item.gulimall.com/${product.skuId}.html|" >
                                         <img th:src="${product.skuImg}" class="dim">
                                     </a>
                                 </p>
@@ -2025,12 +2029,12 @@
         })
 
         function searchByKeyword() {
-            location.href = replaceAndParamVal(location.href,"keyword", $("#keyword_input").val(),false);
+            location.href = replaceAndParamVal(location.href, "keyword", $("#keyword_input").val(), false);
         };
 
         function searchProducts(name, value) {
             //原來的页面
-            location.href = replaceAndParamVal(location.href,name,value,true)
+            location.href = replaceAndParamVal(location.href, name, value, true)
         };
 
 

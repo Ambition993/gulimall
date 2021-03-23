@@ -1,26 +1,26 @@
 package com.zhyf.gulimall.product.service.impl;
 
-import com.zhyf.gulimall.product.entity.AttrEntity;
-import com.zhyf.gulimall.product.service.AttrService;
-import com.zhyf.gulimall.product.vo.AttrGroupWithAttrsVo;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.Query;
-
 import com.zhyf.gulimall.product.dao.AttrGroupDao;
+import com.zhyf.gulimall.product.entity.AttrEntity;
 import com.zhyf.gulimall.product.entity.AttrGroupEntity;
 import com.zhyf.gulimall.product.service.AttrGroupService;
+import com.zhyf.gulimall.product.service.AttrService;
+import com.zhyf.gulimall.product.vo.AttrGroupWithAttrsVo;
+import com.zhyf.gulimall.product.vo.SpuItemAttrGroupVo;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("attrGroupService")
@@ -78,5 +78,19 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
             return attrsVo;
         }).collect(Collectors.toList());
         return collect;
+    }
+
+    @Override
+    @Cacheable(value = "attr", key = "'getAttrGroupWithAttrsBySpuId'") // 入缓存
+    public List<SpuItemAttrGroupVo> getAttrGroupWithAttrsBySpuId(Long spuId, Long catalogId) {
+        // 1查出当前spu对应的所有属性的分组信息以及当前分组下的所有属性的对应的值
+        // 1.1 当前spu有哪些属性分组     select ag.`attr_group_name` ,
+        //                           ag.`attr_group_id` ,
+        //                           aar.`attr_id`
+        //                           from `pms_attr_group`  ag
+        //                           left join `pms_attr_attrgroup_relation` aar on aar.`attr_group_id` = ag.`attr_group_id`
+        // where catelog_id = 225
+        AttrGroupDao baseMapper = this.baseMapper;
+        return baseMapper.getAttrGroupWithAttrsBySpuId(spuId, catalogId);
     }
 }

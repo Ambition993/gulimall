@@ -22,6 +22,7 @@ import com.zhyf.gulimall.product.vo.AttrRespVo;
 import com.zhyf.gulimall.product.vo.AttrVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -116,6 +117,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     }
 
     @Override
+    @Cacheable(value = "attr", key = "'attrInfo:'+#root.args[0]")
     public AttrRespVo getDetailInfo(Long attrId) {
         AttrEntity attrentity = attrDao.selectById(attrId);
         AttrRespVo attrRespVo = new AttrRespVo();

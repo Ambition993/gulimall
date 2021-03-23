@@ -65,6 +65,8 @@ public class AttrController {
     /**
      * 信息
      */
+
+
     @RequestMapping("/info/{attrId}")
 //   @RequiresPermissions("product:attr:info")
     public R info(@PathVariable("attrId") Long attrId) {

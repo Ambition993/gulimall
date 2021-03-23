@@ -1,23 +1,19 @@
 package com.zhyf.gulimall.product.app;
 
-import java.util.Arrays;
-import java.util.Map;
-
+import com.zhyf.common.utils.PageUtils;
+import com.zhyf.common.utils.R;
 import com.zhyf.common.valid.AddGroup;
 import com.zhyf.common.valid.UpdateGroup;
 import com.zhyf.common.valid.UpdateStatusGroup;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.zhyf.gulimall.product.entity.BrandEntity;
 import com.zhyf.gulimall.product.service.BrandService;
-import com.zhyf.common.utils.PageUtils;
-import com.zhyf.common.utils.R;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -54,6 +50,16 @@ public class BrandController {
         BrandEntity brand = brandService.getById(brandId);
 
         return R.ok().put("brand", brand);
+    }
+
+    /**
+     * 信息
+     */
+    @RequestMapping("/infos")
+//   @RequiresPermissions("product:brand:info")
+    public R infos(@RequestParam("brandIds") List<Long> brandIds) {
+        List<BrandEntity> brands = brandService.getBrandsByIds(brandIds);
+            return R.ok().put("brand", brands);
     }
 
     /**

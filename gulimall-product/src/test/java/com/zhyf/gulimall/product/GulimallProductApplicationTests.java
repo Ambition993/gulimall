@@ -1,9 +1,11 @@
 package com.zhyf.gulimall.product;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.zhyf.gulimall.product.dao.AttrGroupDao;
 import com.zhyf.gulimall.product.entity.BrandEntity;
 import com.zhyf.gulimall.product.service.BrandService;
 import com.zhyf.gulimall.product.service.CategoryService;
+import com.zhyf.gulimall.product.vo.SpuItemAttrGroupVo;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,8 @@ class GulimallProductApplicationTests {
     CategoryService categoryService;
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    AttrGroupDao attrGroupDao;
 
     @Test
     public void getParentPath() {
@@ -52,4 +56,9 @@ class GulimallProductApplicationTests {
         System.out.println(hello);
     }
 
+    @Test
+    public void testSql() {
+        List<SpuItemAttrGroupVo> spuId = attrGroupDao.getAttrGroupWithAttrsBySpuId(28L, 225L);
+        System.out.println(spuId);
+    }
 }

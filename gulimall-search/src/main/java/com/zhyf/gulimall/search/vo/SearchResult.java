@@ -2,7 +2,9 @@ package com.zhyf.gulimall.search.vo;
 
 import com.zhyf.common.to.es.SkuEsModel;
 import lombok.Data;
+import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,9 +22,10 @@ public class SearchResult {
     private List<AttrVo> attrs; //当前查询到的结果所有涉及到的属性
     //========================以上是需要返回的信息==================================
     //面包屑导航
-    private List<NavVo> navs;
+    private List<NavVo> navs = new ArrayList<>();
 
     @Data
+    @ToString
     public static class NavVo {
         private String navName;
         private String navValue;
