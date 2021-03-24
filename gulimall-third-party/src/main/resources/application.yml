@@ -6,6 +6,12 @@ spring:
       oss:
         endpoint: oss-cn-hangzhou.aliyuncs.com
         bucket: gulimallzhyf
+      sms:
+        host: https://gyytz.market.alicloudapi.com
+        path: /sms/smsSend
+        appCode: 277712f606bb4e5c8e33b4c78ecabd1b
+        smsSignId: 2e65b1bb3d054466b82f0c9d125465e2
+        templateId: a09602b817fd47e59e7c6e603d3f088d
     nacos:
       discovery:
         server-addr: http://192.168.56.1:8848
@@ -13,3 +19,8 @@ spring:
     name: gulimall-third-party
 server:
   port: 30000
+
+  #日志
+logging:
+  level:
+    com.zhyf: debug

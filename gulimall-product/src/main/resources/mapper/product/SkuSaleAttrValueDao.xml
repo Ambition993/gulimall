@@ -30,7 +30,7 @@
             `pms_sku_info` info
             LEFT JOIN `pms_sku_sale_attr_value` ssav ON ssav.`sku_id` = info.`sku_id`
         WHERE
-            info.`spu_id` = 29
+            info.`spu_id`  = #{spuId}
         GROUP BY
             ssav.`attr_id`,
             ssav.`attr_name`,

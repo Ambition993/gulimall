@@ -6,6 +6,7 @@ package com.zhyf.common.exception;
  *   后三位是错误码
  *   10 通用
  *       001 数据校验错误
+ *       002 短信验证码频率太高
  *   11 商品
  *   12 订单
  *   13 购物车
@@ -16,6 +17,7 @@ public enum BizCodeEnum {
 
     UNKNOWN_EXCEPTION(10000, "未知错误"),
     VALID_EXCEPTION(10001, "参数校验错误"),
+    SMS_CODE_EXCEPTION(10002, "验证码获取频率太高"),
     PRODUCT_UP_EXCEPTION(11000,"商品上架异常");
 
 
