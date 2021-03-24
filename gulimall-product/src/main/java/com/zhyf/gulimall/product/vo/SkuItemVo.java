@@ -9,9 +9,10 @@ import java.util.List;
 
 @Data
 public class SkuItemVo {
-    private SkuInfoEntity info;
+    SkuInfoEntity info;
     List<SkuImagesEntity> images;
     List<SkuItemSaleAttrVo> saleAttr;
     SpuInfoDescEntity desp;
     List<SpuItemAttrGroupVo> groupAttrs;
+    Boolean hasStock = true;
 }

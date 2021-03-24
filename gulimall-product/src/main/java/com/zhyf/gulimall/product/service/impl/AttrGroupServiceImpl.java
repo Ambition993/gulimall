@@ -14,7 +14,6 @@ import com.zhyf.gulimall.product.vo.AttrGroupWithAttrsVo;
 import com.zhyf.gulimall.product.vo.SpuItemAttrGroupVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -81,7 +80,6 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     }
 
     @Override
-    @Cacheable(value = "attr", key = "'getAttrGroupWithAttrsBySpuId'") // 入缓存
     public List<SpuItemAttrGroupVo> getAttrGroupWithAttrsBySpuId(Long spuId, Long catalogId) {
         // 1查出当前spu对应的所有属性的分组信息以及当前分组下的所有属性的对应的值
         // 1.1 当前spu有哪些属性分组     select ag.`attr_group_name` ,
