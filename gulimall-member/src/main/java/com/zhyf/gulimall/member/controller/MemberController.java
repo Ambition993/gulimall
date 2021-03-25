@@ -1,21 +1,22 @@
 package com.zhyf.gulimall.member.controller;
 
+import com.zhyf.common.exception.BizCodeEnum;
+import com.zhyf.common.utils.PageUtils;
+import com.zhyf.common.utils.R;
+import com.zhyf.gulimall.member.entity.MemberEntity;
+import com.zhyf.gulimall.member.exception.PhoneExistException;
+import com.zhyf.gulimall.member.exception.UserNameExistException;
+import com.zhyf.gulimall.member.openfeign.CouponFeignService;
+import com.zhyf.gulimall.member.service.MemberService;
+import com.zhyf.gulimall.member.vo.MemberLoginVo;
+import com.zhyf.gulimall.member.vo.MemberRegistVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
-import com.zhyf.gulimall.member.entity.MemberEntity;
-import com.zhyf.gulimall.member.openfeign.CouponFeignService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.zhyf.gulimall.member.service.MemberService;
-import com.zhyf.common.utils.PageUtils;
-import com.zhyf.common.utils.R;
 
 
 /**
@@ -42,6 +43,32 @@ public class MemberController {
         return R.ok().put("member", memberEntity).put("coupons", membercoupon.get("coupons"));
     }
 
+    /**
+     * 用户注册方法
+     *
+     * @param vo
+     * @return
+     */
+    @PostMapping("/regist")
+    public R regist(@RequestBody MemberRegistVo vo) {
+        try {
+            memberService.regist(vo);
+        } catch (UserNameExistException e) {
+            return R.error(BizCodeEnum.USER_EXIST_EXCEPTION.getCode(), BizCodeEnum.USER_EXIST_EXCEPTION.getMessage());
+        } catch (PhoneExistException e) {
+            return R.error(BizCodeEnum.PHONE_EXIST_EXCEPTION.getCode(), BizCodeEnum.PHONE_EXIST_EXCEPTION.getMessage());
+        }
+        return R.ok();
+    }
+    @PostMapping("/login")
+    public R login(@RequestBody MemberLoginVo loginVo) {
+        MemberEntity memberEntity = memberService.login(loginVo);
+        if (memberEntity != null) {
+            return R.ok().put("data", memberEntity);
+        } else {
+            return R.error(BizCodeEnum.LOGINACCT_PASSWORD_INVALID_EXCEPTION.getCode(), BizCodeEnum.LOGINACCT_PASSWORD_INVALID_EXCEPTION.getMessage());
+        }
+    }
 
     /**
      * 列表
