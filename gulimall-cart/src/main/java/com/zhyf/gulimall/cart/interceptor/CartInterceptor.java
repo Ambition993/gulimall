@@ -2,7 +2,7 @@ package com.zhyf.gulimall.cart.interceptor;
 
 import com.zhyf.common.constant.AuthServerConstant;
 import com.zhyf.common.to.member.MemberTo;
-import com.zhyf.gulimall.cart.To.UserInfoTo;
+import com.zhyf.gulimall.cart.to.UserInfoTo;
 import com.zhyf.gulimall.cart.constant.CartConstant;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @Component
 public class CartInterceptor implements HandlerInterceptor {
 
-    public static ThreadLocal<UserInfoTo> threadLocal;
+    public static ThreadLocal<UserInfoTo> threadLocal = new ThreadLocal<>();
 
     /**
      * 目标执行之前

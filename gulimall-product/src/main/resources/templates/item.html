@@ -627,7 +627,7 @@
 
                 <div class="box-btns clear">
                     <div class="box-btns-one">
-                        <input type="text" name="" id="" value="1"/>
+                        <input type="text" name="" id="numInput" value="1"/>
                         <div class="box-btns-one1">
 
                             <div>
@@ -644,8 +644,8 @@
                         </div>
                     </div>
                     <div class="box-btns-two">
-                        <a href="/static/item/../商品分类\index.html">
-                            立即预约
+                        <a href="#" id="addToCartA" th:attr="skuId=${item.info.skuId}">
+                            添加购物车
                         </a>
                     </div>
                     <div class="box-btns-three">
@@ -1266,9 +1266,16 @@
         // 4 跳转
         location.href = "http://item.gulimall.com/" + filterEle[0] + ".html"
     })
+
     $(function () {
         $(".sku_attr_value").parent().css({"border": "solid 1px #CCC"})
         $("a[class='sku_attr_value checked']").parent().css({"border": "solid 1px red"})
+    })
+
+    $("#addToCartA").click(function () {
+        var num = $("#numInput").val();
+        var skuId = $(this).attr("skuId")
+        location.href = "http://cart.gulimall.com/addToCart?skuId=" + skuId + "&num=" + num;
     })
 </script>
 </html>

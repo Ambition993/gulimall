@@ -1,17 +1,14 @@
 package com.zhyf.gulimall.cart.vo;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.util.List;
 
-@Data
 public class CartItem {
     private Long skuId;
     private Boolean checked = true;
     private String title;
-    private String images;
-    private List<String> attrValue;
+    private String image;
+    private List<String> skuAttr;
     private BigDecimal price;
     private Integer count;
     private BigDecimal totalPrice;
@@ -40,20 +37,20 @@ public class CartItem {
         this.title = title;
     }
 
-    public String getImages() {
-        return images;
+    public String getImage() {
+        return image;
     }
 
-    public void setImages(String images) {
-        this.images = images;
+    public void setImage(String images) {
+        this.image = images;
     }
 
-    public List<String> getAttrValue() {
-        return attrValue;
+    public List<String> getSkuAttr() {
+        return skuAttr;
     }
 
-    public void setAttrValue(List<String> attrValue) {
-        this.attrValue = attrValue;
+    public void setSkuAttr(List<String> skuAttr) {
+        this.skuAttr = skuAttr;
     }
 
     public BigDecimal getPrice() {

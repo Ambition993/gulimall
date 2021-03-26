@@ -1,4 +1,4 @@
-package com.zhyf.gulimall.cart.To;
+package com.zhyf.gulimall.cart.to;
 
 import lombok.Data;
 
