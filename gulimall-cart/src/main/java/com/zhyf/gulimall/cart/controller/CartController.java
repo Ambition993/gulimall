@@ -28,5 +28,4 @@ public class CartController {
         System.out.println(userInfoTo);
         return "cartList";
     }
-
 }

@@ -6,4 +6,5 @@ import lombok.Data;
 public class UserInfoTo {
     private Long userId;
     private String userKey;
+    private boolean tempUser = false;
 }
