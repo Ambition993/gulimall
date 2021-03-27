@@ -1,8 +1,7 @@
 package com.zhyf.gulimall.cart.controller;
 
-import com.zhyf.gulimall.cart.interceptor.CartInterceptor;
 import com.zhyf.gulimall.cart.service.CartService;
-import com.zhyf.gulimall.cart.to.UserInfoTo;
+import com.zhyf.gulimall.cart.vo.Cart;
 import com.zhyf.gulimall.cart.vo.CartItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.servlet.http.HttpSession;
 import java.util.concurrent.ExecutionException;
 
 @Controller
@@ -20,6 +18,21 @@ public class CartController {
     @Autowired
     CartService cartService;
 
+    @GetMapping("/checkItem")
+    public String checkItem(@RequestParam("skuId") Long skuId, @RequestParam("check") Integer check) {
+        cartService.checkItem(skuId, check);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
+    @GetMapping("/countItem")
+    public String countItem(@RequestParam("skuId") Long skuId, @RequestParam("num") Integer num){
+        cartService.changeItemCount(skuId, num);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
+    @GetMapping("/deleteItem")
+    public String deleteItem(@RequestParam("skuId") Long skuId){
+        cartService.deleteItem(skuId);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
     /**
      * 浏览器有一个cookie user-key 用来标识用户身份 一个月过期
      * 第一次使用 将会给一个临时的用户身份
@@ -28,15 +41,13 @@ public class CartController {
      * 第一次 如果没临时用户 就创建一个临时用户
      * 用拦截器来处理登录信
      *
-     * @param session
+     * @param
      * @return
      */
     @GetMapping("/cart.html")
-    public String cartListPage(HttpSession session) {
-        // 快速获得信息 利用threadLocal
-        // 通过threadLocal 取得userinfoTo
-        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
-        System.out.println(userInfoTo);
+    public String cartListPage(Model model) throws ExecutionException, InterruptedException {
+        Cart cart = cartService.getCart();
+        model.addAttribute("cart", cart);
         return "cartList";
     }
 
