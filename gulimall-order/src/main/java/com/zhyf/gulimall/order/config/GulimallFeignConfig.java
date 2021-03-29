@@ -18,8 +18,10 @@ public class GulimallFeignConfig {
             public void apply(RequestTemplate template) {
                 ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
                 HttpServletRequest request = attributes.getRequest();
-                // 给新请求同步了老请求的cookie
-                template.header("Cookie", request.getHeader("Cookie"));
+                if (request != null) {
+                    // 给新请求同步了老请求的cookie
+                    template.header("Cookie", request.getHeader("Cookie"));
+                }
             }
         };
     }
