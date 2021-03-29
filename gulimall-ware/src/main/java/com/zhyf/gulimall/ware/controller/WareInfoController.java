@@ -4,10 +4,10 @@ import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.ware.entity.WareInfoEntity;
 import com.zhyf.gulimall.ware.service.WareInfoService;
+import com.zhyf.gulimall.ware.vo.FareVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -28,7 +28,8 @@ public class WareInfoController {
     private WareInfoService wareInfoService;
 
     @GetMapping("/fare")
-    public BigDecimal getFare(@RequestParam("addrId") Long addrId) {
+    @ResponseBody
+    public FareVo getFare(@RequestParam("addrId") Long addrId) {
         return wareInfoService.getFare(addrId);
     }
 

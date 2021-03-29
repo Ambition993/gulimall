@@ -494,7 +494,10 @@
     <div class="yfze">
         <p class="yfze_a"><span class="z">应付总额：</span><span class="hq">￥<b id="payPriceElement">[[${#numbers.formatDecimal(orderConfirmData.payPrice,3,2)}]]</b></span>
         </p>
-        <p class="yfze_b">寄送至： 收货人： 188****5052</p>
+        <p class="yfze_b">寄送至： <span id="receiveAddressElem"></span> 收货人： <span id="receiver"></span></p>
+        <p class="yfze_b">
+            收货人号码：<span id="receiverPhone"></span>
+        </p>
     </div>
     <button class="tijiao">提交订单</button>
 </div>
@@ -752,10 +755,14 @@
         // 发送ajax 获取运费
         $.get("http://gulimall.com/api/ware/wareinfo/fare/?addrId=" + addrId, function (data) {
             console.log(data)
-            $("#fareElement").text(data);
+            $("#fareElement").text(data.fare);
             let total = [[${orderConfirmData.total}]];
-            let number = total * 1 + data * 1;
+            let number = total * 1 + data.fare * 1;
+            // 设置运费等消息
             $("#payPriceElement").text(number)
+            $("#receiveAddressElem").text(data.address.province + " " + data.address.detailAddress);
+            $("#receiver").text(data.address.name)
+            $("#receiverPhone").text(data.address.phone)
         })
     }
 
