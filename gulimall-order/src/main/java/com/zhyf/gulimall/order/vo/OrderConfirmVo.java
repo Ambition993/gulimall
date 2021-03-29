@@ -25,6 +25,7 @@ public class OrderConfirmVo {
     @Setter
     Integer integration;
     //防重令牌
+    @Setter@Getter
     String orderToken;
     @Getter
     @Setter

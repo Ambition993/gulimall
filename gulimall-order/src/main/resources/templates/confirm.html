@@ -499,8 +499,12 @@
             收货人号码：<span id="receiverPhone"></span>
         </p>
     </div>
-    <button class="tijiao">提交订单</button>
-</div>
+    <form action="http://order.gulimall.com/submitOrder" method="post">
+        <input id="addrIdInput" type="hidden" name="addrId">
+        <input id="payPriceInput" type="hidden" name="payPrice">
+        <input type="hidden" name="orderToken" th:value="${orderConfirmData.orderToken}">
+        <button class="tijiao" type="submit">提交订单</button>
+    </form>
 </div>
 
 <div class="headera">
@@ -752,14 +756,17 @@
     });
 
     function getFare(addrId) {
+        // 给表单回填选择的地址
+        $("#addrIdInput").val(addrId);
         // 发送ajax 获取运费
         $.get("http://gulimall.com/api/ware/wareinfo/fare/?addrId=" + addrId, function (data) {
             console.log(data)
             $("#fareElement").text(data.fare);
             let total = [[${orderConfirmData.total}]];
-            let number = total * 1 + data.fare * 1;
+            let payPrice = total * 1 + data.fare * 1;
             // 设置运费等消息
-            $("#payPriceElement").text(number)
+            $("#payPriceElement").text(payPrice)
+            $("#payPriceInput").val(payPrice)
             $("#receiveAddressElem").text(data.address.province + " " + data.address.detailAddress);
             $("#receiver").text(data.address.name)
             $("#receiverPhone").text(data.address.phone)
