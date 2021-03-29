@@ -17,10 +17,12 @@ public class GulimallFeignConfig {
             @Override
             public void apply(RequestTemplate template) {
                 ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-                HttpServletRequest request = attributes.getRequest();
-                if (request != null) {
-                    // 给新请求同步了老请求的cookie
-                    template.header("Cookie", request.getHeader("Cookie"));
+                if (attributes != null) {
+                    HttpServletRequest request = attributes.getRequest();
+                    if (request != null) {
+                        // 给新请求同步了老请求的cookie
+                        template.header("Cookie", request.getHeader("Cookie"));
+                    }
                 }
             }
         };
