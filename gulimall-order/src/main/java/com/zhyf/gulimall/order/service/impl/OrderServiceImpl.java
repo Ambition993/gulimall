@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhyf.common.to.member.MemberTo;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.Query;
+import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.order.constant.OrderConstant;
 import com.zhyf.gulimall.order.dao.OrderDao;
 import com.zhyf.gulimall.order.entity.OrderEntity;
@@ -119,6 +120,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo vo) {
         SubmitOrderResponseVo responseVo = new SubmitOrderResponseVo();
+        responseVo.setCode(0);
         threadLocal.set(vo);
         // 1 验证令牌 必须是原子性的  脚本返回 0 1 成功1 不成功0
         String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
@@ -142,7 +144,29 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 saveOrder(order);
                 // 4 库存锁定 只要有异常就回滚订单数据
                 // 订单号，订单项信息（skuId num skuName)
-
+                WareSkuLockVo lockVo = new WareSkuLockVo();
+                lockVo.setOrderSn(order.getOrder().getOrderSn());
+                List<OrderItemEntity> items = order.getItems();
+                List<OrderItemVo> collect = items.stream().map(item -> {
+                    OrderItemVo itemVo = new OrderItemVo();
+                    itemVo.setSkuId(item.getSkuId());
+                    itemVo.setCount(item.getSkuQuantity());
+                    itemVo.setTitle(item.getSkuName());
+                    return itemVo;
+                }).collect(Collectors.toList());
+                lockVo.setLocks(collect);
+                // 远程锁库存
+                // todo
+                R r = wmsFeignService.orderLockStock(lockVo);
+                if (r.getCode() == 0) {
+                    //库存锁成功
+                    responseVo.setOrder(order.getOrder());
+                    return responseVo;
+                } else {
+                    // 锁失败
+                    responseVo.setCode(3);
+                    return responseVo;
+                }
             } else {
                 // 验证失败
                 responseVo.setCode(2);
@@ -153,7 +177,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             responseVo.setCode(1);
             return responseVo;
         }
-        return responseVo;
     }
 
     /**
@@ -184,6 +207,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         List<OrderItemEntity> orderItems = buildOrderItems(orderSn);
         // 3 计算价格 积分等等信息
         computePrice(orderEntity, orderItems);
+        createTo.setItems(orderItems);
+        createTo.setOrder(orderEntity);
         return createTo;
     }
 

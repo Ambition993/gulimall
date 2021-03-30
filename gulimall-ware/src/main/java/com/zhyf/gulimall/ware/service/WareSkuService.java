@@ -3,7 +3,6 @@ package com.zhyf.gulimall.ware.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.gulimall.ware.entity.WareSkuEntity;
-import com.zhyf.gulimall.ware.vo.LockStockResult;
 import com.zhyf.gulimall.ware.vo.SkuHasStockVo;
 import com.zhyf.gulimall.ware.vo.WareSkuLockVo;
 
@@ -25,6 +24,6 @@ public interface WareSkuService extends IService<WareSkuEntity> {
 
     List<SkuHasStockVo> getSkusHasStock(List<Long> skuIds);
 
-    List<LockStockResult> orderLockStockwareSkuLockVo(WareSkuLockVo wareSkuLockVo);
+    Boolean orderLockStockwareSkuLockVo(WareSkuLockVo wareSkuLockVo);
 }
 

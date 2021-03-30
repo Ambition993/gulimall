@@ -1,10 +1,11 @@
 package com.zhyf.gulimall.ware.controller;
 
+import com.zhyf.common.exception.BizCodeEnum;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.ware.entity.WareSkuEntity;
+import com.zhyf.gulimall.ware.exception.NoStockException;
 import com.zhyf.gulimall.ware.service.WareSkuService;
-import com.zhyf.gulimall.ware.vo.LockStockResult;
 import com.zhyf.gulimall.ware.vo.SkuHasStockVo;
 import com.zhyf.gulimall.ware.vo.WareSkuLockVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class WareSkuController {
     @PostMapping("/hasstock")
     public List<SkuHasStockVo> getSkusHasStock(@RequestBody List<Long> skuIds) {
         // skuid stock
-        return  wareSkuService.getSkusHasStock(skuIds);
+        return wareSkuService.getSkusHasStock(skuIds);
     }
 
     /**
@@ -99,7 +100,12 @@ public class WareSkuController {
     }
 
     @PostMapping("/lock/order")
-    public List<LockStockResult> orderLockStock(@RequestBody WareSkuLockVo wareSkuLockVo){
-        return wareSkuService.orderLockStockwareSkuLockVo(wareSkuLockVo);
+    public R orderLockStock(@RequestBody WareSkuLockVo wareSkuLockVo) {
+        try {
+            Boolean locked = wareSkuService.orderLockStockwareSkuLockVo(wareSkuLockVo);
+            return R.ok();
+        } catch (NoStockException e) {
+            return R.error(BizCodeEnum.NO_STOCK_EXCEPTION.getCode(), BizCodeEnum.NO_STOCK_EXCEPTION.getMessage());
+        }
     }
 }

@@ -25,11 +25,12 @@ public class OrderWebController {
     }
 
     @PostMapping("/submitOrder")
-    public String submitOrder(OrderSubmitVo vo) {
+    public String submitOrder(OrderSubmitVo vo, Model model) {
         SubmitOrderResponseVo responseVo = orderService.submitOrder(vo);
         // 去创建订单 令牌 价格 库存
         if (responseVo.getCode() == 0) {
             // 支付选择页
+            model.addAttribute("submitOrderResp", responseVo);
             return "pay";
         } else {
             // 下单失败回到订单确认订单信息
