@@ -27,6 +27,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -159,7 +160,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
      * @param orderItems  订单里所有订单项
      */
     private void computePrice(OrderEntity orderEntity, List<OrderItemEntity> orderItems) {
+        BigDecimal total = new BigDecimal("0.0");
+
+        BigDecimal coupon = new BigDecimal("0.0");
+        BigDecimal promotionAmount = new BigDecimal("0.0");
+        BigDecimal integrationAmount = new BigDecimal("0.0");
+        for (OrderItemEntity orderItem : orderItems) {
+            BigDecimal realAmount = orderItem.getRealAmount();
+            promotionAmount = promotionAmount.add(orderItem.getPromotionAmount());
+            coupon = coupon.add(orderItem.getCouponAmount());
+            integrationAmount = integrationAmount.add(orderItem.getIntegrationAmount());
+            total = total.add(realAmount);
+        }
         // 1 订单价格相关
+        orderEntity.setTotalAmount(total);
+        // 应付价格
+        orderEntity.setPayAmount(total.add(orderEntity.getFreightAmount()));
+        orderEntity.setPromotionAmount(promotionAmount);
+        orderEntity.setIntegrationAmount(integrationAmount);
+        orderEntity.setCouponAmount(coupon);
         //
     }
 
@@ -226,7 +245,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderItemEntity.setSpuBrand(spuInfo.getBrandId().toString());
         orderItemEntity.setSpuName(spuInfo.getSpuName());
         orderItemEntity.setCategoryId(spuInfo.getCatalogId());
-
         // 3 sku
         orderItemEntity.setSkuId(cartItem.getSkuId());
         orderItemEntity.setSkuName(cartItem.getTitle());
@@ -239,6 +257,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         // 5 积分
         orderItemEntity.setGiftGrowth(cartItem.getPrice().intValue());
         orderItemEntity.setGiftIntegration(cartItem.getPrice().intValue());
-        return null;
+        // 6 订单项的价格信息
+        orderItemEntity.setPromotionAmount(new BigDecimal("0"));
+        orderItemEntity.setCouponAmount(new BigDecimal("0"));
+        orderItemEntity.setIntegrationAmount(new BigDecimal("0"));
+        // 当前订单项的实际金额 总金额减去各种优惠
+        BigDecimal originPrice = orderItemEntity.getSkuPrice().multiply(new BigDecimal(orderItemEntity.getSkuQuantity().toString()));
+        BigDecimal realPrice = originPrice.subtract(new BigDecimal(orderItemEntity.getCouponAmount().toString()))
+                .subtract(new BigDecimal(orderItemEntity.getPromotionAmount().toString()))
+                .subtract(new BigDecimal(orderItemEntity.getIntegrationAmount().toString()));
+        orderItemEntity.setRealAmount(realPrice);
+        return orderItemEntity;
     }
 }
