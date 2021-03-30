@@ -4,7 +4,9 @@ import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.ware.entity.WareSkuEntity;
 import com.zhyf.gulimall.ware.service.WareSkuService;
+import com.zhyf.gulimall.ware.vo.LockStockResult;
 import com.zhyf.gulimall.ware.vo.SkuHasStockVo;
+import com.zhyf.gulimall.ware.vo.WareSkuLockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -96,4 +98,8 @@ public class WareSkuController {
         return R.ok();
     }
 
+    @PostMapping("/lock/order")
+    public List<LockStockResult> orderLockStock(@RequestBody WareSkuLockVo wareSkuLockVo){
+        return wareSkuService.orderLockStockwareSkuLockVo(wareSkuLockVo);
+    }
 }

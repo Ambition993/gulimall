@@ -11,11 +11,13 @@ import com.zhyf.gulimall.order.constant.OrderConstant;
 import com.zhyf.gulimall.order.dao.OrderDao;
 import com.zhyf.gulimall.order.entity.OrderEntity;
 import com.zhyf.gulimall.order.entity.OrderItemEntity;
+import com.zhyf.gulimall.order.enume.OrderStatusEnum;
 import com.zhyf.gulimall.order.feign.CartFeignService;
 import com.zhyf.gulimall.order.feign.MemberFeignService;
 import com.zhyf.gulimall.order.feign.ProductFeignService;
 import com.zhyf.gulimall.order.feign.WmsFeignService;
 import com.zhyf.gulimall.order.interceptor.LoginUserInterceptor;
+import com.zhyf.gulimall.order.service.OrderItemService;
 import com.zhyf.gulimall.order.service.OrderService;
 import com.zhyf.gulimall.order.service.to.OrderCreateTo;
 import com.zhyf.gulimall.order.vo.*;
@@ -23,15 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -58,6 +58,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     ProductFeignService productFeignService;
+
+    @Autowired
+    OrderItemService orderItemService;
+
 
     private final ThreadLocal<OrderSubmitVo> threadLocal = new ThreadLocal<>();
 
@@ -111,6 +115,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return confirmVo;
     }
 
+    @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo vo) {
         SubmitOrderResponseVo responseVo = new SubmitOrderResponseVo();
@@ -126,13 +131,42 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         );
         if (res == 1) {
             //  验证成功  下单 去创建订单 验证令牌 验证价格 锁库存
+            // 1 创建订单
+            OrderCreateTo order = createOrder();
+            // 2 验证价格
+            BigDecimal payAmount = order.getOrder().getPayAmount();
+            BigDecimal payPrice = vo.getPayPrice();
+            if (Math.abs(payAmount.subtract(payPrice).doubleValue()) < 0.01) {
+                // 金额对比成功
+                // 3 保存订单
+                saveOrder(order);
+                // 4 库存锁定 只要有异常就回滚订单数据
+                // 订单号，订单项信息（skuId num skuName)
 
+            } else {
+                // 验证失败
+                responseVo.setCode(2);
+                return responseVo;
+            }
         } else {
             // 验证失败
             responseVo.setCode(1);
             return responseVo;
         }
         return responseVo;
+    }
+
+    /**
+     * 保存订单数据
+     *
+     * @param order
+     */
+    private void saveOrder(OrderCreateTo order) {
+        OrderEntity orderEntity = order.getOrder();
+        orderEntity.setModifyTime(new Date());
+        this.save(orderEntity);
+        List<OrderItemEntity> orderItems = order.getItems();
+        orderItemService.saveBatch(orderItems);
     }
 
     /**
@@ -148,7 +182,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         // todo 收货时间
         // 2 获取到所有的订单项信息
         List<OrderItemEntity> orderItems = buildOrderItems(orderSn);
-        // 3 计算价格
+        // 3 计算价格 积分等等信息
         computePrice(orderEntity, orderItems);
         return createTo;
     }
@@ -161,16 +195,21 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
      */
     private void computePrice(OrderEntity orderEntity, List<OrderItemEntity> orderItems) {
         BigDecimal total = new BigDecimal("0.0");
-
+        // 一些优惠信息
         BigDecimal coupon = new BigDecimal("0.0");
         BigDecimal promotionAmount = new BigDecimal("0.0");
         BigDecimal integrationAmount = new BigDecimal("0.0");
+        // 积分信息
+        BigDecimal gift = new BigDecimal("0.0");
+        BigDecimal growth = new BigDecimal("0.0");
         for (OrderItemEntity orderItem : orderItems) {
             BigDecimal realAmount = orderItem.getRealAmount();
             promotionAmount = promotionAmount.add(orderItem.getPromotionAmount());
             coupon = coupon.add(orderItem.getCouponAmount());
             integrationAmount = integrationAmount.add(orderItem.getIntegrationAmount());
             total = total.add(realAmount);
+            gift.add(new BigDecimal(orderItem.getGiftIntegration().toString()));
+            growth.add(new BigDecimal(orderItem.getGiftGrowth()));
         }
         // 1 订单价格相关
         orderEntity.setTotalAmount(total);
@@ -179,7 +218,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderEntity.setPromotionAmount(promotionAmount);
         orderEntity.setIntegrationAmount(integrationAmount);
         orderEntity.setCouponAmount(coupon);
-        //
+        // 设置积分信息
+        orderEntity.setGrowth(growth.intValue());
+        orderEntity.setIntegration(gift.intValue());
+        orderEntity.setDeleteStatus(0);
     }
 
     /**
@@ -189,6 +231,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
      * @return
      */
     private OrderEntity buildOrder(String orderSn) {
+        MemberTo memberTo = LoginUserInterceptor.toThreadLocal.get();
         // 1获取收货地址信息
         OrderSubmitVo submitVo = threadLocal.get();
         // 远程调用库存服务找到运费信息
@@ -196,6 +239,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         // 创建订单实体
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setOrderSn(orderSn);
+        orderEntity.setMemberId(memberTo.getId());
         // 运费信息
         orderEntity.setFreightAmount(fareResp.getFare());
         // 收货人信息
@@ -206,6 +250,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderEntity.setReceiverPhone(fareResp.getAddress().getPhone());
         orderEntity.setReceiverProvince(fareResp.getAddress().getProvince());
         orderEntity.setReceiverRegion(fareResp.getAddress().getRegion());
+        // 设置订单的相关状态信息
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());  // 状态码
+        orderEntity.setAutoConfirmDay(7);
         return orderEntity;
     }
 
@@ -255,8 +302,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderItemEntity.setSkuQuantity(cartItem.getCount());
         // 4 优惠  不做
         // 5 积分
-        orderItemEntity.setGiftGrowth(cartItem.getPrice().intValue());
-        orderItemEntity.setGiftIntegration(cartItem.getPrice().intValue());
+        orderItemEntity.setGiftGrowth(cartItem.getPrice().multiply(new BigDecimal(cartItem.getCount().toString())).intValue());
+        orderItemEntity.setGiftIntegration(cartItem.getPrice().multiply(new BigDecimal(cartItem.getCount().toString())).intValue());
         // 6 订单项的价格信息
         orderItemEntity.setPromotionAmount(new BigDecimal("0"));
         orderItemEntity.setCouponAmount(new BigDecimal("0"));

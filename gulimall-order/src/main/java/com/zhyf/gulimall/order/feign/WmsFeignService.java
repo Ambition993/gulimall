@@ -1,7 +1,9 @@
 package com.zhyf.gulimall.order.feign;
 
 import com.zhyf.gulimall.order.vo.FareVo;
+import com.zhyf.gulimall.order.vo.LockStockResult;
 import com.zhyf.gulimall.order.vo.SkuStockVo;
+import com.zhyf.gulimall.order.vo.WareSkuLockVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,4 +17,8 @@ public interface WmsFeignService {
     @GetMapping("/ware/wareinfo/fare")
     @ResponseBody
     FareVo getFare(@RequestParam("addrId") Long addrId);
+
+    @PostMapping("/ware/waresku/lock/order")
+    List<LockStockResult> orderLockStock(@RequestBody WareSkuLockVo wareSkuLockVo);
+
 }
