@@ -22,7 +22,7 @@ import java.util.Map;
  * @date 2020-12-16 13:25:56
  */
 @RestController
-@RequestMapping("ware/wareinfo")
+@RequestMapping("/ware/wareinfo")
 public class WareInfoController {
     @Autowired
     private WareInfoService wareInfoService;

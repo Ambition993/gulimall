@@ -1,9 +1,9 @@
 package com.zhyf.gulimall.order.feign;
 
+import com.zhyf.gulimall.order.vo.FareVo;
 import com.zhyf.gulimall.order.vo.SkuStockVo;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -11,4 +11,8 @@ import java.util.List;
 public interface WmsFeignService {
     @PostMapping("/ware/waresku/hasstock")
     List<SkuStockVo> getSkusHasStock(@RequestBody List<Long> skuIds);
+
+    @GetMapping("/ware/wareinfo/fare")
+    @ResponseBody
+    FareVo getFare(@RequestParam("addrId") Long addrId);
 }
