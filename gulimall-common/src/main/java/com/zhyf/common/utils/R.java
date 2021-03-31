@@ -86,4 +86,6 @@ public class R extends HashMap<String, Object> {
     public String getMsg() {
         return (String) this.get("msg");
     }
+
+
 }

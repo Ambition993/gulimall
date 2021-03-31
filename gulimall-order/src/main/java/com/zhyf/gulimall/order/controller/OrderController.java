@@ -1,21 +1,16 @@
 package com.zhyf.gulimall.order.controller;
 
+import com.zhyf.common.utils.PageUtils;
+import com.zhyf.common.utils.R;
+import com.zhyf.gulimall.order.entity.OrderEntity;
+import com.zhyf.gulimall.order.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
-import com.zhyf.gulimall.order.entity.OrderEntity;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.zhyf.gulimall.order.service.OrderService;
-import com.zhyf.common.utils.PageUtils;
-import com.zhyf.common.utils.R;
-
 
 
 /**
@@ -31,12 +26,23 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    @ResponseBody
+    @GetMapping("/status/{orderSn}")
+    public R getOrderStatus(@PathVariable("orderSn") String orderSn) {
+
+        OrderEntity orderEntity = orderService.getOrderByOrderSn(orderSn);
+
+        R r = R.ok().put("data", orderEntity);
+
+        return r;
+    }
+
     /**
      * 列表
      */
     @RequestMapping("/list")
 //   @RequiresPermissions("product:order:list")
-    public R list(@RequestParam Map<String, Object> params){
+    public R list(@RequestParam Map<String, Object> params) {
         PageUtils page = orderService.queryPage(params);
 
         return R.ok().put("page", page);
@@ -48,8 +54,8 @@ public class OrderController {
      */
     @RequestMapping("/info/{id}")
 //   @RequiresPermissions("product:order:info")
-    public R info(@PathVariable("id") Long id){
-		OrderEntity order = orderService.getById(id);
+    public R info(@PathVariable("id") Long id) {
+        OrderEntity order = orderService.getById(id);
 
         return R.ok().put("order", order);
     }
@@ -59,8 +65,8 @@ public class OrderController {
      */
     @RequestMapping("/save")
 //   @RequiresPermissions("product:order:save")
-    public R save(@RequestBody OrderEntity order){
-		orderService.save(order);
+    public R save(@RequestBody OrderEntity order) {
+        orderService.save(order);
 
         return R.ok();
     }
@@ -70,8 +76,8 @@ public class OrderController {
      */
     @RequestMapping("/update")
 //    @RequiresPermissions("product:order:update")
-    public R update(@RequestBody OrderEntity order){
-		orderService.updateById(order);
+    public R update(@RequestBody OrderEntity order) {
+        orderService.updateById(order);
 
         return R.ok();
     }
@@ -81,8 +87,8 @@ public class OrderController {
      */
     @RequestMapping("/delete")
 //  @RequiresPermissions("product:order:delete")
-    public R delete(@RequestBody Long[] ids){
-		orderService.removeByIds(Arrays.asList(ids));
+    public R delete(@RequestBody Long[] ids) {
+        orderService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
     }

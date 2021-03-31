@@ -16,6 +16,13 @@ spring:
         server-addr: http://192.168.56.1:8848
   application:
     name: gulimall-ware
+  rabbitmq:
+    host: 47.111.6.138
+    port: 5672
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: manual
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
 mybatis-plus:
