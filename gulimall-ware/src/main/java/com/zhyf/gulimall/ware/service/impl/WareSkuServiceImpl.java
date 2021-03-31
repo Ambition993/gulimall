@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhyf.common.exception.NoStockException;
+import com.zhyf.common.to.mq.OrderTo;
 import com.zhyf.common.to.mq.StockDetailTo;
 import com.zhyf.common.to.mq.StockLockedTo;
 import com.zhyf.common.utils.PageUtils;
@@ -24,6 +25,7 @@ import com.zhyf.gulimall.ware.vo.OrderVo;
 import com.zhyf.gulimall.ware.vo.SkuHasStockVo;
 import com.zhyf.gulimall.ware.vo.WareSkuLockVo;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service("wareSkuService")
 public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> implements WareSkuService {
     @Autowired
@@ -199,6 +201,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         return true;
     }
 
+    @Transactional
     @Override
     public void unLockStock(StockLockedTo to) {
         /**
@@ -229,7 +232,11 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 });
                 if (data == null || data.getStatus() == 4) {
                     // 这个订单已经取消了 可以解锁库存 或者订单不存在
-                    unLockStock(detail.getSkuId(), detail.getWareId(), detail.getSkuNum(), detailId);
+                    log.info("准备解锁库存");
+                    if (byId.getLockStatus() == 1) {
+                        // 当前库存工作单详情 状态1 已锁定 但是未解锁才可以解锁
+                        unLockStock(detail.getSkuId(), detail.getWareId(), detail.getSkuNum(), detailId);
+                    }
                 }
             } else {
                 // 远程服务失败
@@ -241,9 +248,35 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
 
     }
 
+    // 防止订单服务卡顿导致订单状态一直改不了 库存消息优先到期 查订单状态一定是新建状态 什么都不做就走了
+    // 导致卡顿的订单永远不能解库存
+    @Transactional
+    @Override
+    public void unLockStock(OrderTo orderTo) {
+        String orderSn = orderTo.getOrderSn();
+        //查一下最新的状态 防止重复解锁
+        WareOrderTaskEntity taskEntity = orderTaskService.getOrderTaskByOrderSn(orderSn);
+
+        Long id = taskEntity.getId();
+        // 按照库存工作单的ID 找到所有没有解锁的库存 进行解锁
+        List<WareOrderTaskDetailEntity> entities = orderTaskDetailService.list(new QueryWrapper<WareOrderTaskDetailEntity>()
+                .eq("task_id", id)
+                .eq("lock_status", 1));
+        //unLockStock(Long skuId, Long wareId, Integer skuNum, Long detailId)
+        for (WareOrderTaskDetailEntity entity : entities) {
+            unLockStock(entity.getSkuId(), entity.getWareId(), entity.getSkuNum(), entity.getId());
+        }
+    }
+
 
     private void unLockStock(Long skuId, Long wareId, Integer skuNum, Long detailId) {
+        // 解锁库存
         wareSkuDao.unLockStock(skuId, wareId, skuNum);
+        // 更改库存工作单的状态
+        WareOrderTaskDetailEntity entity = new WareOrderTaskDetailEntity();
+        entity.setId(detailId);
+        entity.setLockStatus(2); // 变为已解锁
+        orderTaskDetailService.updateById(entity);
     }
 
 
