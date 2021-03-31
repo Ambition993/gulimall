@@ -3,12 +3,12 @@ package com.zhyf.gulimall.ware.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.zhyf.common.exception.NoStockException;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.Query;
 import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.ware.dao.WareSkuDao;
 import com.zhyf.gulimall.ware.entity.WareSkuEntity;
-import com.zhyf.gulimall.ware.exception.NoStockException;
 import com.zhyf.gulimall.ware.feign.ProductFeignService;
 import com.zhyf.gulimall.ware.service.WareSkuService;
 import com.zhyf.gulimall.ware.vo.OrderItemVo;
@@ -110,7 +110,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
      */
     @Override
     @Transactional(rollbackFor = NoStockException.class)
-    public Boolean orderLockStockwareSkuLockVo(WareSkuLockVo wareSkuLockVo) {
+    public Boolean orderLockStockWareSkuLockVo(WareSkuLockVo wareSkuLockVo) {
         // 1 按照下单的收货地址 找到一个就近的仓库 锁库存
         // 2 找到每个商品在那个仓库有库存
         List<OrderItemVo> locks = wareSkuLockVo.getLocks();

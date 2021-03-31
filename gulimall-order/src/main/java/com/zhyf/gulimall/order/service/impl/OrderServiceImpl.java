@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.zhyf.common.exception.NoStockException;
 import com.zhyf.common.to.member.MemberTo;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.Query;
@@ -122,7 +123,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         SubmitOrderResponseVo responseVo = new SubmitOrderResponseVo();
         responseVo.setCode(0);
         threadLocal.set(vo);
-        // 1 验证令牌 必须是原子性的  脚本返回 0 1 成功1 不成功0
+        // 验证令牌 必须是原子性的  脚本返回 0 1 成功1 不成功0
         String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
         String orderToken = vo.getOrderToken();
         MemberTo memberTo = LoginUserInterceptor.toThreadLocal.get();
@@ -133,16 +134,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         );
         if (res == 1) {
             //  验证成功  下单 去创建订单 验证令牌 验证价格 锁库存
-            // 1 创建订单
+            // TODO  1 创建订单
             OrderCreateTo order = createOrder();
-            // 2 验证价格
+            // TODO  2 验证价格
             BigDecimal payAmount = order.getOrder().getPayAmount();
             BigDecimal payPrice = vo.getPayPrice();
             if (Math.abs(payAmount.subtract(payPrice).doubleValue()) < 0.01) {
                 // 金额对比成功
-                // 3 保存订单
+                // 3 todo 保存订单
                 saveOrder(order);
-                // 4 库存锁定 只要有异常就回滚订单数据
+                // 库存锁定 只要有异常就回滚订单数据
                 // 订单号，订单项信息（skuId num skuName)
                 WareSkuLockVo lockVo = new WareSkuLockVo();
                 lockVo.setOrderSn(order.getOrder().getOrderSn());
@@ -155,17 +156,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     return itemVo;
                 }).collect(Collectors.toList());
                 lockVo.setLocks(collect);
-                // 远程锁库存
-                // todo
+                // 4 TODO 远程锁库存
                 R r = wmsFeignService.orderLockStock(lockVo);
                 if (r.getCode() == 0) {
-                    //库存锁成功
+                    // 库存锁成功
                     responseVo.setOrder(order.getOrder());
+                    // TODO 远程扣减积分
+//                    int i = 1 / 0;
                     return responseVo;
                 } else {
-                    // 锁失败
-                    responseVo.setCode(3);
-                    return responseVo;
+                    // 锁失败 直接抛出异常然后回滚
+                    String msg = r.getMsg();
+                    throw new NoStockException(msg);
                 }
             } else {
                 // 验证失败

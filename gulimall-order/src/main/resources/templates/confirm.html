@@ -340,7 +340,7 @@
     <!--右侧绿色-->
     <img src="/static/order/confirm/img/08.png" class="img2"/>
 </div>
-<p class="p1">填写并核对订单信息</p>
+<p class="p1">填写并核对订单信息 <span style="color: red" th:if="${msg!=null}" th:text="${msg}"></span></p>
 <div class="section">
     <!--收货人信息-->
     <div class="top-2">
@@ -364,12 +364,6 @@
     <p class="xiang">详情</p>
 </div>
 
-<!--&lt;!&ndash;地址&ndash;&gt;-->
-<!--<div class="top-5">-->
-<!--    <p>北京昌平区</p><span>北京市  昌平区城区晨曦小区-16号楼 吉利大学  齐天大圣 150****2245</span><img-->
-<!--        src="/static/order/confirm/img/09.png"/><span>距收货人0米</span>-->
-<!--    <p class="p3">距离最近</p><span class="xiu">修改自提点</span>-->
-<!--</div>-->
 <div class="hh1"></div>
 
 <!--支付方式-->

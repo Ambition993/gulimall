@@ -1,10 +1,10 @@
 package com.zhyf.gulimall.ware.controller;
 
 import com.zhyf.common.exception.BizCodeEnum;
+import com.zhyf.common.exception.NoStockException;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.ware.entity.WareSkuEntity;
-import com.zhyf.gulimall.ware.exception.NoStockException;
 import com.zhyf.gulimall.ware.service.WareSkuService;
 import com.zhyf.gulimall.ware.vo.SkuHasStockVo;
 import com.zhyf.gulimall.ware.vo.WareSkuLockVo;
@@ -102,7 +102,7 @@ public class WareSkuController {
     @PostMapping("/lock/order")
     public R orderLockStock(@RequestBody WareSkuLockVo wareSkuLockVo) {
         try {
-            Boolean locked = wareSkuService.orderLockStockwareSkuLockVo(wareSkuLockVo);
+            Boolean locked = wareSkuService.orderLockStockWareSkuLockVo(wareSkuLockVo);
             return R.ok();
         } catch (NoStockException e) {
             return R.error(BizCodeEnum.NO_STOCK_EXCEPTION.getCode(), BizCodeEnum.NO_STOCK_EXCEPTION.getMessage());

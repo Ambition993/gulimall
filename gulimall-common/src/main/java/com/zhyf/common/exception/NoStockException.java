@@ -1,4 +1,4 @@
-package com.zhyf.gulimall.ware.exception;
+package com.zhyf.common.exception;
 
 public class NoStockException extends RuntimeException {
     private Long skuId;
@@ -6,7 +6,9 @@ public class NoStockException extends RuntimeException {
     public NoStockException(Long skuId) {
         super("商品ID" + skuId + "没有足够的库存");
     }
-
+    public NoStockException(String msg) {
+        super("msg");
+    }
     public Long getSkuId() {
         return skuId;
     }
