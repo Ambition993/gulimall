@@ -265,6 +265,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         paymentInfoEntity.setOrderSn(vo.getOut_trade_no());
         paymentInfoEntity.setPaymentStatus(vo.getTrade_status());
         paymentInfoEntity.setCallbackTime(vo.getNotify_time());
+        paymentInfoEntity.setTotalAmount(new BigDecimal(vo.getTotal_amount()));
+        paymentInfoEntity.setCreateTime(new Date(vo.getGmt_create()));
         paymentInfoService.save(paymentInfoEntity);
         // 修改订单的状态信息
         if (vo.getTrade_status().equals("TRADE_SUCCESS") || vo.getTrade_status().equals("TRADE_FINISHED")) {

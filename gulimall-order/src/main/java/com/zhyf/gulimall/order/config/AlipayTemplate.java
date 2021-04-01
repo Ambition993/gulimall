@@ -64,6 +64,7 @@ public class AlipayTemplate {
                 + "\"total_amount\":\"" + total_amount + "\","
                 + "\"subject\":\"" + subject + "\","
                 + "\"body\":\"" + body + "\","
+                + "\"timeout_express\":\"1m\","
                 + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
 
         String result = alipayClient.pageExecute(alipayRequest).getBody();

@@ -47,8 +47,7 @@ public class OrderPayedListener {
         if (signVerified) {
             System.out.println("支付宝异步通知验签成功");
             //修改订单状态
-            orderService.handlePayResult(vo);
-            return "success";
+            return orderService.handlePayResult(vo);
         } else {
             System.out.println("支付宝异步通知验签失败");
             return "error";

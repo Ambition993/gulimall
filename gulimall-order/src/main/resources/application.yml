@@ -18,6 +18,8 @@ spring:
     name: gulimall-order
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  mvc:
+    date-format: yyyy-MM-dd HH:mm:ss
 mybatis-plus:
   mapperLocations: classpath:mapper/**/*.xml
   global-config:
