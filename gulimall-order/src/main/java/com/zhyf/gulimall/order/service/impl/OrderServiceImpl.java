@@ -22,7 +22,7 @@ import com.zhyf.gulimall.order.feign.WmsFeignService;
 import com.zhyf.gulimall.order.interceptor.LoginUserInterceptor;
 import com.zhyf.gulimall.order.service.OrderItemService;
 import com.zhyf.gulimall.order.service.OrderService;
-import com.zhyf.gulimall.order.service.to.OrderCreateTo;
+import com.zhyf.gulimall.order.to.OrderCreateTo;
 import com.zhyf.gulimall.order.vo.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
@@ -215,6 +215,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     orderTo
             );
         }
+    }
+
+    @Override
+    public PayVo getOrderPay(String orderSn) {
+        PayVo payVo = new PayVo();
+        OrderEntity order = this.getOrderByOrderSn(orderSn);
+        BigDecimal bigDecimal = order.getTotalAmount().setScale(2, BigDecimal.ROUND_UP);
+        payVo.setTotal_amount(bigDecimal.toString());
+        payVo.setOut_trade_no(order.getOrderSn());
+        List<OrderItemEntity> list = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", orderSn));
+        OrderItemEntity orderItemEntity = list.get(0);
+        payVo.setSubject(orderItemEntity.getSkuName());
+        payVo.setBody(orderItemEntity.getSkuAttrsVals());
+        return payVo;
     }
 
     /**

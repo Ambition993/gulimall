@@ -1,4 +1,4 @@
-package com.zhyf.gulimall.order.service.to;
+package com.zhyf.gulimall.order.to;
 
 import com.zhyf.gulimall.order.entity.OrderEntity;
 import com.zhyf.gulimall.order.entity.OrderItemEntity;

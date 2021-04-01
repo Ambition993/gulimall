@@ -5,6 +5,7 @@ import com.zhyf.common.utils.PageUtils;
 import com.zhyf.gulimall.order.entity.OrderEntity;
 import com.zhyf.gulimall.order.vo.OrderConfirmVo;
 import com.zhyf.gulimall.order.vo.OrderSubmitVo;
+import com.zhyf.gulimall.order.vo.PayVo;
 import com.zhyf.gulimall.order.vo.SubmitOrderResponseVo;
 
 import java.util.Map;
@@ -28,5 +29,7 @@ public interface OrderService extends IService<OrderEntity> {
     OrderEntity getOrderByOrderSn(String orderSn);
 
     void closeOrder(OrderEntity orderEntity);
+
+    PayVo getOrderPay(String orderSn);
 }
 
