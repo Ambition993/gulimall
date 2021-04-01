@@ -9,7 +9,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 @EnableDiscoveryClient
 @SpringBootApplication
 @EnableRedisHttpSession
-@EnableFeignClients(basePackages = "com.zhyf.gulimall.member.openfeign")
+@EnableFeignClients
 public class GulimallMemberApplication {
     public static void main(String[] args) {
         SpringApplication.run(GulimallMemberApplication.class, args);

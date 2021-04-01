@@ -19,7 +19,8 @@ public class LoginUserInterceptor implements HandlerInterceptor {
         // /order/order/status/ 请求是这个就放过 来自库存服务的远程调用是无需登录的 只要匹配到了这个连接就可以放过了
         String uri = request.getRequestURI();
         boolean match = new AntPathMatcher().match("/order/order/status/**", uri);
-        if (match) {
+        boolean payed = new AntPathMatcher().match("/payed/notify", uri);
+        if (match || payed) {
             return true;
         }
         HttpSession session = request.getSession();
