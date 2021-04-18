@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhyf.common.exception.NoStockException;
 import com.zhyf.common.to.member.MemberTo;
 import com.zhyf.common.to.mq.OrderTo;
+import com.zhyf.common.to.mq.SeckillOrderTo;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.Query;
 import com.zhyf.common.utils.R;
@@ -275,6 +276,33 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             this.baseMapper.updateOrderStatus(orderSn, OrderStatusEnum.PAYED.getCode());
         }
         return "success";
+    }
+
+    /**
+     * 创建秒杀单
+     *
+     * @param seckillOrderTo
+     */
+    @Override
+    public void createSeckillOrder(SeckillOrderTo seckillOrderTo) {
+        //todo 保存订单信息
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setOrderSn(seckillOrderTo.getOrderSn());
+        orderEntity.setMemberId(seckillOrderTo.getMemberId());
+
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+        BigDecimal payAmount = seckillOrderTo.getSeckillPrice().multiply(new BigDecimal("" + seckillOrderTo.getNum()));
+        orderEntity.setPayAmount(payAmount);
+        orderEntity.setTotalAmount(payAmount);
+        this.save(orderEntity);
+        // 订单项信息
+        OrderItemEntity orderItemEntity = new OrderItemEntity();
+        orderItemEntity.setOrderSn(seckillOrderTo.getOrderSn());
+        orderItemEntity.setRealAmount(payAmount);
+        orderItemEntity.setSkuQuantity(seckillOrderTo.getNum());
+        //todo
+        // productFeignService.getSpuInfoBySkuId()
+        orderItemService.save(orderItemEntity);
     }
 
     /**

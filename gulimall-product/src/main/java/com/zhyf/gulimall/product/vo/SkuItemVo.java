@@ -15,4 +15,5 @@ public class SkuItemVo {
     SpuInfoDescEntity desp;
     List<SpuItemAttrGroupVo> groupAttrs;
     Boolean hasStock = true;
+    SeckillInfoVo seckillInfo; // 当前商品的秒杀优惠信息
 }

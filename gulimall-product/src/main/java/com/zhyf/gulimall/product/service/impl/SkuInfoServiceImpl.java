@@ -1,18 +1,23 @@
 package com.zhyf.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhyf.common.utils.PageUtils;
 import com.zhyf.common.utils.Query;
+import com.zhyf.common.utils.R;
 import com.zhyf.gulimall.product.dao.SkuInfoDao;
 import com.zhyf.gulimall.product.entity.SkuImagesEntity;
 import com.zhyf.gulimall.product.entity.SkuInfoEntity;
 import com.zhyf.gulimall.product.entity.SpuInfoDescEntity;
+import com.zhyf.gulimall.product.feign.SecKillFeignService;
 import com.zhyf.gulimall.product.service.*;
+import com.zhyf.gulimall.product.vo.SeckillInfoVo;
 import com.zhyf.gulimall.product.vo.SkuItemSaleAttrVo;
 import com.zhyf.gulimall.product.vo.SkuItemVo;
 import com.zhyf.gulimall.product.vo.SpuItemAttrGroupVo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -24,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 
-
+@Slf4j
 @Service("skuInfoService")
 public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> implements SkuInfoService {
     @Autowired
@@ -41,6 +46,9 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
 
     @Autowired
     ThreadPoolExecutor threadPoolExecutor;
+
+    @Autowired
+    SecKillFeignService secKillFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -145,9 +153,21 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
             List<SkuImagesEntity> images = imagesService.getSkuImgsBySkuId(skuId);
             itemVo.setImages(images);
 
-        });
+        }, threadPoolExecutor);
+
+        //  查询商品的秒杀信息
+        CompletableFuture<Void> secKillFuture = CompletableFuture.runAsync(() -> {
+            R r = secKillFeignService.getSkuSeckillInfo(skuId);
+            log.info("secKillFeignService.getSkuSeckillInfo(skuId);");
+            if (r.getCode() == 0) {
+                SeckillInfoVo data = r.getData("data", new TypeReference<SeckillInfoVo>() {
+                });
+                itemVo.setSeckillInfo(data);
+            }
+        }, threadPoolExecutor);
+
         // 等待所有的任务完成
-        CompletableFuture.allOf(saleAttrFuture, descFuture, imagesFuture, baseAttrFuture).get();
+        CompletableFuture.allOf(saleAttrFuture, descFuture, imagesFuture, baseAttrFuture, secKillFuture).get();
         return itemVo;
     }
 
