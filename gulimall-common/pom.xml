@@ -70,6 +70,10 @@
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <!--        远程服务调用-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -86,6 +90,10 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
             <version>2.0.1.Final</version>
@@ -96,7 +104,6 @@
             <version>1.2.60</version>
             <scope>compile</scope>
         </dependency>
-
         <!-- 链路追踪  -->
         <!--        <dependency>-->
         <!--            <groupId>org.springframework.cloud</groupId>-->
