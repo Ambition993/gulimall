@@ -1,5 +1,9 @@
 package com.zhyf.gulimall.seckill.service.impl;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -15,6 +19,7 @@ import com.zhyf.gulimall.seckill.to.SecKillSkuRedisTo;
 import com.zhyf.gulimall.seckill.vo.SeckillSessionsWithSkusVo;
 import com.zhyf.gulimall.seckill.vo.SeckillSkuVo;
 import com.zhyf.gulimall.seckill.vo.SkuInfoVo;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -34,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class SeckillServiceImpl implements SeckillService {
     @Autowired
@@ -72,34 +78,38 @@ public class SeckillServiceImpl implements SeckillService {
      *
      * @return
      */
+    @SentinelResource(value = "getCurrentSeckillSkusResource")
     @Override
     public List<SecKillSkuRedisTo> getCurrentSeckillSkus() {
         // 1 当前时间是哪个秒杀场次
         long time = new Date().getTime();
-        Set<String> keys = redisTemplate.keys(SecKillConstant.SESSION_CACHE_PREFIX + "*");
-        for (String key : keys) {
-            String replace = key.replace(SecKillConstant.SESSION_CACHE_PREFIX, "");
-            String[] s = replace.split("_");
-            Long start = Long.parseLong(s[0]);
-            Long end = Long.parseLong(s[1]);
-            if (time >= start && time <= end) {
-                // 2 这个秒杀场次有哪些商品
-                List<String> range = redisTemplate.opsForList().range(key, -100, 100);
-                BoundHashOperations<String, String, Object> hashOps = redisTemplate.boundHashOps(SecKillConstant.SKUKILL_CACHE_PREFIX);
-                List<Object> list = hashOps.multiGet(range);
-                if (list != null && list.size() > 0) {
-                    List<SecKillSkuRedisTo> collect = list.stream().map(item -> {
-                        SecKillSkuRedisTo redisTo = JSON.parseObject((String) item, SecKillSkuRedisTo.class);
-                        // redisTo.setRandomCode(null); 当前秒杀开始了 可以返回随机码
-                        return redisTo;
-                    }).collect(Collectors.toList());
-                    return collect;
+
+        try (Entry entry = SphU.entry("seckillSkus")) {
+            Set<String> keys = redisTemplate.keys(SecKillConstant.SESSION_CACHE_PREFIX + "*");
+            for (String key : keys) {
+                String replace = key.replace(SecKillConstant.SESSION_CACHE_PREFIX, "");
+                String[] s = replace.split("_");
+                Long start = Long.parseLong(s[0]);
+                Long end = Long.parseLong(s[1]);
+                if (time >= start && time <= end) {
+                    // 2 这个秒杀场次有哪些商品
+                    List<String> range = redisTemplate.opsForList().range(key, -100, 100);
+                    BoundHashOperations<String, String, Object> hashOps = redisTemplate.boundHashOps(SecKillConstant.SKUKILL_CACHE_PREFIX);
+                    List<Object> list = hashOps.multiGet(range);
+                    if (list != null && list.size() > 0) {
+                        List<SecKillSkuRedisTo> collect = list.stream().map(item -> {
+                            SecKillSkuRedisTo redisTo = JSON.parseObject((String) item, SecKillSkuRedisTo.class);
+                            // redisTo.setRandomCode(null); 当前秒杀开始了 可以返回随机码
+                            return redisTo;
+                        }).collect(Collectors.toList());
+                        return collect;
+                    }
+                    break;
                 }
-                break;
             }
+        } catch (BlockException e) {
+            log.info("资源被限流,原因{}", e.getMessage());
         }
-
-
         return null;
     }
 
@@ -202,20 +212,22 @@ public class SeckillServiceImpl implements SeckillService {
      * @param sessions
      */
     private void saveSessionInfos(List<SeckillSessionsWithSkusVo> sessions) {
-        sessions.forEach(session -> {
-            Long startTime = session.getStartTime().getTime();
-            Long endTime = session.getEndTime().getTime();
-            String key = SecKillConstant.SESSION_CACHE_PREFIX + startTime + "_" + endTime;
-            List<SeckillSkuVo> relationSkus = session.getRelationSkus();
-            List<String> skuIds = relationSkus.stream().map(item -> item.getPromotionSessionId().toString() + "_" + item.getSkuId().toString()).collect(Collectors.toList());
-            ListOperations<String, String> opsForList = redisTemplate.opsForList();
-            // 秒杀信息保存 seckill:sessions
-            // 没上架的时候才上架保障了幂等性
-            Boolean hasKey = redisTemplate.hasKey(key);
-            if (hasKey != null && !hasKey) {
-                opsForList.leftPushAll(key, skuIds);
-            }
-        });
+        if (sessions != null && sessions.size() > 0) {
+            sessions.forEach(session -> {
+                Long startTime = session.getStartTime().getTime();
+                Long endTime = session.getEndTime().getTime();
+                String key = SecKillConstant.SESSION_CACHE_PREFIX + startTime + "_" + endTime;
+                List<SeckillSkuVo> relationSkus = session.getRelationSkus();
+                List<String> skuIds = relationSkus.stream().map(item -> item.getPromotionSessionId().toString() + "_" + item.getSkuId().toString()).collect(Collectors.toList());
+                ListOperations<String, String> opsForList = redisTemplate.opsForList();
+                // 秒杀信息保存 seckill:sessions
+                // 没上架的时候才上架保障了幂等性
+                Boolean hasKey = redisTemplate.hasKey(key);
+                if (hasKey != null && !hasKey) {
+                    opsForList.leftPushAll(key, skuIds);
+                }
+            });
+        }
     }
 
 
@@ -226,36 +238,38 @@ public class SeckillServiceImpl implements SeckillService {
      */
     private void saveSkuInfos(List<SeckillSessionsWithSkusVo> sessions) {
         BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(SecKillConstant.SKUKILL_CACHE_PREFIX);
-        sessions.stream().forEach(session -> {
-            session.getRelationSkus().forEach(seckillSkuVo -> {
-                String token = UUID.randomUUID().toString().replace("_", "");
-                Boolean key = ops.hasKey(seckillSkuVo.getPromotionSessionId().toString() + "_" + seckillSkuVo.getSkuId().toString()); // 当前场次+当前这个sku
-                if (key != null && !key) { // 没有key才能保存 避免重复提交
-                    SecKillSkuRedisTo redisTo = new SecKillSkuRedisTo();
-                    // 1 sku基本信息
-                    R res = productFeignService.getSkuInfo(seckillSkuVo.getSkuId());
-                    if (res.getCode() == 0) {
-                        SkuInfoVo skuInfo = res.getData("skuInfo", new TypeReference<SkuInfoVo>() {
-                        });
-                        redisTo.setSkuInfoVo(skuInfo);
-                    }
-                    // 2 sku秒杀信息
-                    BeanUtils.copyProperties(seckillSkuVo, redisTo);
-                    // 3 设置上当前商品的秒杀时间信息
-                    redisTo.setStartTime(session.getStartTime().getTime());
-                    redisTo.setEndTime(session.getEndTime().getTime());
-                    // 4 设置随机码
-                    redisTo.setRandomCode(token);
-                    String s = JSON.toJSONString(redisTo);
-                    // 5 商品sku详细信息保存 seckill:skus
-                    ops.put(seckillSkuVo.getPromotionSessionId().toString() + "_" + seckillSkuVo.getSkuId().toString(), s); // 当前场次+当前这个sku
+        if (sessions != null && sessions.size() > 0) {
+            sessions.stream().forEach(session -> {
+                session.getRelationSkus().forEach(seckillSkuVo -> {
+                    String token = UUID.randomUUID().toString().replace("_", "");
+                    Boolean key = ops.hasKey(seckillSkuVo.getPromotionSessionId().toString() + "_" + seckillSkuVo.getSkuId().toString()); // 当前场次+当前这个sku
+                    if (key != null && !key) { // 没有key才能保存 避免重复提交
+                        SecKillSkuRedisTo redisTo = new SecKillSkuRedisTo();
+                        // 1 sku基本信息
+                        R res = productFeignService.getSkuInfo(seckillSkuVo.getSkuId());
+                        if (res.getCode() == 0) {
+                            SkuInfoVo skuInfo = res.getData("skuInfo", new TypeReference<SkuInfoVo>() {
+                            });
+                            redisTo.setSkuInfoVo(skuInfo);
+                        }
+                        // 2 sku秒杀信息
+                        BeanUtils.copyProperties(seckillSkuVo, redisTo);
+                        // 3 设置上当前商品的秒杀时间信息
+                        redisTo.setStartTime(session.getStartTime().getTime());
+                        redisTo.setEndTime(session.getEndTime().getTime());
+                        // 4 设置随机码
+                        redisTo.setRandomCode(token);
+                        String s = JSON.toJSONString(redisTo);
+                        // 5 商品sku详细信息保存 seckill:skus
+                        ops.put(seckillSkuVo.getPromotionSessionId().toString() + "_" + seckillSkuVo.getSkuId().toString(), s); // 当前场次+当前这个sku
 
-                    // 库存信息 如果当前这个场次的上商品的库存信息已经上架了不需要上架了
-                    // 6 使用分布式信号来限制购买商品 seckill:stock
-                    RSemaphore semaphore = redissonClient.getSemaphore(SecKillConstant.SKU_STOCK_SEMAPHORE + token);
-                    semaphore.trySetPermits(seckillSkuVo.getSeckillCount());
-                }
+                        // 库存信息 如果当前这个场次的上商品的库存信息已经上架了不需要上架了
+                        // 6 使用分布式信号来限制购买商品 seckill:stock
+                        RSemaphore semaphore = redissonClient.getSemaphore(SecKillConstant.SKU_STOCK_SEMAPHORE + token);
+                        semaphore.trySetPermits(seckillSkuVo.getSeckillCount());
+                    }
+                });
             });
-        });
+        }
     }
 }
